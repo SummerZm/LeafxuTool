@@ -1,0 +1,2 @@
+1. 运行vim时，必须在tags文件所在目录下运行，否则运行Vim时还要用:settags设定“tag”文件的路径
+2. window文件中的换行/r，会影响taglist的定位

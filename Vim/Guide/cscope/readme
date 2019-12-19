@@ -1,0 +1,66 @@
+用vim + cscope/ctags, 实现Source Insight功能，方便查看分析源码
+
+1. 查看vim 是否支持 cscope
+	$vim --version | grep cscope
+	
+2. 编译支持cscope的vim (--enable-cscope)
+
+3. 查看系统是否安装cscope 
+	$which cscope
+
+4. 安装cscope 
+	$yum install cscope 
+
+5. cscope常见参数命令
+	-R: 递归子目录
+	-b: 不进入cscope界面（默认）
+	-q: 快速查询
+	-k: 不搜索/usr/include目录
+	-I: 指定查找头文件目录
+	-C: 搜索时忽略大小写
+
+	Ctrl-D 用于退出 cscope 界面
+	Ctrl-] 查看光标所在函数定义
+	Ctrl-o 返回前一级文件
+
+6. cscope使用：
+	eg:
+	$vim main.c	@打开文件
+	:cscope add cscope.out	@引入指定位置的数据库文件
+	:cscope find g print	@查找函数定义或文件
+	:cscope find f cstest.h
+    :cscope reset   @重置数据库
+	:cs find c work
+	:cs find s work
+
+	s: 查找C语言符号，即查找函数名、宏、枚举值等出现的地方
+	g: 查找函数、宏、枚举等定义的位置，类似ctags所提供的功能
+	d: 查找本函数调用的函数
+	c: 查找调用本函数的函数
+	t: 查找指定的字符串
+	e: 查找egrep模式，相当于egrep功能，但查找速度快多了
+	f: 查找并打开文件，类似vim的find功能
+	i: 查找包含本文件的文
+
+	#注意： 所生产的cscope.out 和 tags 文件要在打开VIM所在文件夹; 否则会导致跳转不了; 
+	#技巧:  cscope的缩写:cs 
+	#横向分割窗口: scscope 缩写 :scs
+
+7. 分割窗口映射
+	垂直：nmap <C-Space><C-Space>s :vert scs find s <C-R>=expand("<cword>")<CR><CR>
+	水平: nmap <C-Space><C-Space>s :scs find s <C-R>=expand("<cword>")<CR><CR>
+	#注意: 在本系统中 <C-Space> 被占用
+
+8. 文件找不到问题
+    原因：使用相对路径导致
+    官方给出的解决方案是：生成cscope.files文件.文件存放代码文件的绝对路径
+    执行命令： find 当前目录绝对路径 -name "*c" >> cscope.files
+    eg: find /home/summer/projects/opensip/ -name "*.c" -o -name "*h" >> cscope.files 
+        cscope -Rbpk
+
+
+
+
+
+
+

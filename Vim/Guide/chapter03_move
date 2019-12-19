@@ -1,0 +1,78 @@
+1. 常见替换命令:
+    A. cc : 替换一整行
+    B. cw ：替换当前字符
+    C. r:   替换当前光标字符
+    D. R:   替换当前光标字符串
+    
+2. 常见查找命令
+    A. 命令行模式下的 / 和 ？
+    B. 普通模式下, 行内查找命令 f和F, 向前或向后行内查找 
+
+3. 文件操作
+    A. 重命名文件  :f newName 
+    B. 另存文件 :w filename
+    C. 删除文件 :rm filename
+    D. 加密文件 vim -x filename
+    E. 创建文件 :edit filename
+    F. 打开一个未命名的文件 :new
+
+4. 光标移动
+	A. h:向左移动
+	B. l:向右移动
+	C. j:向下移动
+	D. k:向上移动
+	E. b:向前移动 ---> VISULA BLOCK 模式下
+	F. o:向后移动 ---> VISULA BLOCK 模式下
+    G. ne:向后移动n个单词
+    H. nb:向前移动n个单词
+
+5. 文本操作 (命令模式)
+    A. 撤销u操作:  ctrl+r : 
+    B. 文本居中: ce [center]
+    C. 文本靠左: le [left]
+    D. 文本靠右：fi [right]
+
+6. 实用跳转操作
+    A. 设置标志. 在普通模式下敲入 m[a-z].  例子: ma (光标所在位置设置一个标志)
+    B. 跳转到标志. `a (跳转到标志a所在位置) 'a(跳转到标志a所在行首)
+    C. 查看已设定的标志. 命令行模式下 :marks.
+    D. 跳转到上次修改位置 '[
+    E. 跳转最后保存的位置 ']
+    F. 回到跳转前位置 ''
+    G. 删除标志. 命令行模式下 :delmarks
+
+    注：即使vim退出，为文档设置的标志，会保存下来，以备下次使用。
+
+7. 高级替换操作
+    //将指定行中的str1替换为str2
+    A. :s/str1/str2/ : 替换当前行第一处匹配
+    B. :s/str1/str2/g: 替换当前行所有匹配
+    C. :n,ms/str1/str2/: 替换n到m行第一处匹配
+    D. :n,ms/str1/str2/g: 替换n到m行所有匹配	
+    E. :n, $s/str1/str2/g: 替换n行到最后一行的匹配
+    F. :%s/str1/str2/: 替换所有行第一次匹配 
+    G. :%s/str1/str2/g: 替换所有行的所有匹配
+    //用于待替换字符串中包含'/'的情况
+    H. :%s#/str1#/str2#g: 替换所有/str1为/str2 
+    I. :%s+/str1+/str2/g
+
+8. tab切换 
+    gt: 切换到下一个tab
+    gT: 切换到下一个tab
+    ngt: n为数字，切换到指定第n个tab
+
+9. 翻页
+	A. 前进一页 C-f: forward 
+	B. 后退一页 C-b: backward
+	C. 前进半页 C-u: up
+	D. 后退半页 C-d: down
+
+
+
+
+
+
+
+
+
+

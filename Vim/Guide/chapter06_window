@@ -1,0 +1,23 @@
+1. 鼠标在各个窗口间循环移动:
+	a. ctrl+w+(小写的 hjkl)
+	b. 非线性的跳转: ctrl_w+t(top : 左上角, +b: bottom, 右下角), p: preview: 上一个子窗口.
+
+2. 窗口本身的位值的移动:
+	a. ctrl_w + r: 窗口本身, 不是鼠标指针顺时针 (向下, 向右 移动), R : 则是逆时针反方向(向上, 向左)移动.
+	b. ctrl_w+x: 左右上下对应位置的窗口 对调. 要注意窗口必须是对应的.
+
+3. 窗口本身的位置移动, 而且大小也发生"最大化"变化
+	a. Ctrl_w+ HJKL windows窗口"贴边"最大化, 最大化后就不能再次操作复原窗口了
+
+4. 调整窗口的水平/垂直尺寸:
+	a. 用ctrl+ w结合 >, <调整水平尺寸. 
+	b. 用ctrl+ w结合 + - 调整垂直尺寸,也可以用命令 :resize +/- n, 或者 vertical resize +/- n
+
+5. 关闭子窗口的问题. 
+	a. 除了命令外, 窗口关闭的方式: 用ctrl+w + q(quit), c(close), o(other)等.
+
+6. 配置文件映射
+	a. nmap w= :resize +20<CR>
+	b. nmap w- :resize -20<CR>
+	c. nmap w, :vertical resize -20<CR>
+	d. nmap w. :vertical resize +20<CR>

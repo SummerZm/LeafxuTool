@@ -1,0 +1,48 @@
+Vim配置文件.vimrc的映射语法
+1. 普通模式：输入命令映射
+2. 可视模式；可视区域高亮并输入命令
+3. 待决模式：操作符等待中(d,y,c等命令之后)
+4. 插入模式
+5. 命令模式
+
+map模式代号
+0. map 作用于普通，可视，选择，待决模式
+1. n 作用于普通模式  -- nmap
+2. v 作用于可视和选择 -- vmap
+3. s 作用于选择模式 -- smap
+4. x 作用于可视模式 --xmap
+5. ! 作用于插入，命令模式 -- !map 
+6. i 作用于查入模式
+7. I 作用于插入，命令行和Lang-Arg 模式的 ":lmap" 映射 
+8. c 作用于命令行模式
+
+map命令简介
+1. map {lhs} {rhs} |mapmode-nvo|*:map* 
+	a. {lhs}: 映射键
+	b. {rhs}: 被映射键
+	c. |mapmode-nvo|作用于n v o三种模式
+	d: eg: :map td :tabnew.<cr> --- 在n ,v, o输入 td相当于输入：tabnew
+	e: map会对{rhs}进行递归扫描解析
+
+2. noremap和map相对.
+	a. 作用模式和命令格式与map相同
+	b. noremap不允许再对{rhs}进行映射扫描，不会再对{rhs}键序列递归解释扫描
+
+3. umap取消某个映射. eg：umap td
+
+4. mapclear取消所有map键的映射
+
+5. 其他命令如：nmap， vmap, omap等等都与map类似,有相应的umap, noremap, mapclear函数 
+	a. eg: nmap, nnoremap, numap, nmapclear
+	b. eg: vmap, vnoremap, vumap, vmapclear
+
+特殊参数
+1. <buffer> : 映射将只局限于当前缓冲区（也就是你此时正编辑的文件）
+2. <silent> : 执行键绑定时不在命令行上回显. (输入,w查找abcd时，命令行上不会显示/abcd)
+3. <special>: 一般用于定义特殊键怕有副作用的场合
+4. <script> :
+5. <expr>	: 如果定义新映射的第一个参数是<expr>，那么参数会作为表达式来进行计算
+6. <unique> : 检查是否该键已经被映射，如果该映射或者缩写已经存在，则该命令会失败 
+
+
+
