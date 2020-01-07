@@ -1,0 +1,23 @@
+/*************************************************************************
+ > File Name: git-tag.doc
+ > Author: Leafxu
+ > Created Time: Mon 11 Jun 2018 01:08:08 PM CST
+ ************************************************************************/
+1. 创建标签
+    a. git tag v1.0
+    b. git tag v0.9 f52c633  对f52c633提交创建标签
+    c. git tag -a v0.1 -m "version 0.1 released" 1094adb  创建带说明的标签
+        ---> -a：指定标签名
+        ---> -m: 标签说明
+
+2. 查看标签
+    a. git tag查看所有标签
+    b. git show <tagname> 查看标签信息
+
+3. 推送标签
+    a. git push origin <tagname>可以推送一个本地标签；
+    b. git push origin --tags可以推送全部未推送过的本地标签；
+
+4. 删除标签
+    a. git tag -d <tagname>可以删除一个本地标签；
+    b. git push origin :refs/tags/<tagname>可以删除一个远程标签。

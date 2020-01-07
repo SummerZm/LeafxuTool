@@ -1,0 +1,21 @@
+/*************************************************************************
+ > File Name: git-workspace.doc
+ > Author: Leafxu
+ > Created Time: Mon 04 Jun 2018 09:37:53 AM CST
+ ************************************************************************/
+
+1. .git: Git的版本库。版本库包含暂存区。
+2. git add: 将文件改动添加到暂存区(stage)
+3. git commit: 将暂存区的内容提交到当前分支
+4. git status: 查看文件与暂存区的状态
+    a. Untracked: 有文件被修改，但没有被git add提交到stage
+    b. Modify: 文件改动已提交暂存区，但没有被git commit提交到分支
+    c. Clean: 文件没有改动或暂存区的改动都已经提交到分支
+
+5. git diff: 工作区(work dict)与暂存区(stage)的比较
+6. git diff HEAD: 工作区与版本库 
+7. git diff --cached: 暂存区(stage)与分支(master)的比较
+8.  git diff branch 比较两个分支
+9. git diff branch -- filenane  比较两个分支的某个文件
+10. git管理的是修改 (通过多加一个中间层暂存区stage解决问题) 
+    a. 没有执行git add的改动不会被git commit

@@ -1,0 +1,60 @@
+/*************************************************************************
+ > File Name: git-remotereposity.doc
+ > Author: Leafxu
+ > Created Time: Fri 08 Jun 2018 02:42:07 PM CST
+ ************************************************************************/
+
+1. 创建一个远程仓库
+2. 关联远程仓库
+    a. 使用命令git remote add origin git@server-name:path/repo-name.git；
+    b. 更新远程仓库
+        ---> 方法一: git remote set-url origin Leafxu@www.leafxu.top:/home/Leafxu/git/cbase
+        ---> 方法二: 修改配置文件  ./git/config
+        ---> 方法三: 删除远程参库重新添加。 git remote rm origin
+        ---> 方法四：借助工具修改
+
+3. 推送内容到远程库
+    a. 使用命令git push -u origin master第一次推送master分支的所有内容；
+    b. 此后，使用命令git push origin master推送最新修改；
+
+4. 从远程克隆内容
+    a. git clone git@github.com:michaelliao/gitskills.git
+    b. 常见错误:  
+        ---> git push提示: receiv.denycurrentbranch
+        ---> 原因: 不能提交改动到非裸仓库，避免覆盖了别人的代码树; 所以一般clone非裸仓库，需要关联一个裸远程仓库。
+        ---> 解决：[不建议] 
+        ---> 方法1： git config receive.denyCurrentBranch ignore
+        ---> 方法2： ./git/config  [receive]添加  denyCurrentBranch = ignore
+        ---> 方法3： 更换合理的裸远程仓库 [推荐]
+
+5. 查看远程仓库信息
+    a. git remote -v
+
+6. 从本地推送分支
+    a. git push origin branch 【设置了远程分支】
+    b. git push <远程主机名> <本地分支名>:<远程分支名>  【没有设置远程分支】
+    c. 如果推送失败，先用git pull抓取远程的新提交
+   
+7. 在本地创建本地和远程的分支
+    a. git checkout -b branchname origin/branchname (并没有将本地分支和远程分支关联起来)
+    b. git branch --set-upstream branch-name origin/branch-name (关联本地远程分支)
+    c. 分支冲突时，git pull抓取的新分支，手动合并修改提交
+
+8. git提交日志整理
+    a. git rebase
+        ---> 把本地未分叉的提交历史整理成直线
+        ---> 目的：目的是使得我们在查看历史提交的变化时更容易，因为分叉的提交需要三方对比
+        ---> 查看日志：git log --graph --pretty=oneline --abbrev-commit
+
+9. git pull
+    a. git pull --rebase <远程主机名> <远程分支名>:<本地分支名> 在这种情况下，"git pull"就等价于"git fetch"加上"git rebase"。
+    b. git pull 操作实际上等价于，先执行"git fetch"获得远程更新，然后"git merge"与本地分支进行合并。
+
+10. git fetch [wait to continue]
+    a. git fetch origin master  
+    b. git fetch url branch
+
+
+
+
+

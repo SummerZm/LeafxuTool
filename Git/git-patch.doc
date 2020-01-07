@@ -1,0 +1,4 @@
+A.  patch合并提示：
+    a.  git diff生成的patch，可以用git apply --check 查看patch是否能够干净顺利地应用到当前分支中。
+    b.  git format-patch生成的patch不能打到当前分支，git am会给出提示，帮你解决冲突，两者都有较好的提示功能。
+    c.  git format-patch兼容性差，但携带较多的信息。如：开发者的名字等

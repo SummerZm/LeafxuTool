@@ -1,0 +1,11 @@
+1. hooks：这个目录存放一些shell脚本，可以设置特定的git命令后出发相应的脚本；在搭建gitweb系统或其他git托管系统会经常用到hook script
+2. info：包含仓库的一些信息
+3. logs：保存所有更新的引用记录（会在后面介绍引用）
+4. objects：所有的Git对象都会存放在这个目录中，对象的SHA1哈希值的前两位是文件夹名称，后38位作为对象文件名
+5. refs：这个目录一般包括三个子文件夹：heads、remotes和tags，heads中的文件标识了项目中的各个分支指向的当前commit
+6. COMMIT_EDITMSG：保存最新的commit message，Git系统不会用到这个文件，只是给用户一个参考
+7. config：这个是Git仓库的配置文件
+8. description：仓库的描述信息，主要给gitweb等git托管系统使用
+9. index：这个文件就是我们前面文章提到的暂存区（stage），是一个二进制文件
+10. HEAD：这个文件包含了一个当前分支（branch）的引用，通过这个文件Git可以得到下一次commit的parent
+11. ORIG_HEAD：HEAD指针的前一个状态

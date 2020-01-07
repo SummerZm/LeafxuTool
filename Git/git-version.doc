@@ -1,0 +1,64 @@
+/*************************************************************************
+ > File Name: git-version.doc
+ > Author: Leafxu
+ > Created Time: Thu 31 May 2018 10:00:22 AM CST
+ ************************************************************************/
+ 1. 功能简介
+    a. 查看历史日志。 git -log  git log --pretty=online
+    b. 回退上一个版本。 git reset --hard HEAD^
+    c. 回退到某一个版本。git reset --hard commit_id
+    d. 查看版本变更历史。git reflog
+    e. git revert <commit_id>操作实现以退为进，
+       
+
+ 2. 问题
+    a. reset 与 revert的区别
+        --->  git revert不会擦除"回退"之后的 commit_id ,而是正常的当做一次"commit"，产生一次新的操作记录，所以可以push，不会让你再pull
+        --->  git reset 会擦除回退之后的commit_id, 导致本地仓库的记录树与远程仓库的记录树不一致，导致无法同步
+
+    b. 撤销工作区的改变 (如果暂存区有记录，回退到暂存区版本；否则回退到当前master的版本)
+        ---> git checkout -- file  ('--' 不能省略 )
+
+    c. 撤销暂存区的改变
+        ---> git reset HEAD file
+
+    d. 撤销版本(回退版本：版本库+暂存区+工作区) 
+        ---> git reset --hard HEAD^
+
+    e. 撤销版本(回退版本：版本库+暂存区) 
+        	--->  git reset HEAD^   
+    
+    f. 撤销版本(回退版本：版本库) 
+        ---> git reset --soft HEAD^
+ 
+3. 查看某个文件的版本信息：git blame filename            
+4. 修改历史记录
+    a. [初级:lastest version] --> git commit --amend -m "xxxx"
+    b. [中级] --> git rebase -i HEAD~3   修改最近3个提交记录  
+	
+		pick:	保留该commit（缩写:p）
+		reword:	保留该commit，但我需要修改该commit的注释（缩写:r）
+		edit:	保留该commit, 但我要停下来修改该提交(不仅仅修改注释)（缩写:e）
+		squash:	将该commit和前一个commit合并（缩写:s）
+		fixup	将该commit和前一个commit合并，但我不要保留该提交的注释信息（缩写:f）
+		exec:	执行shell命令（缩写:x）
+		drop:	我要丢弃该commit（缩写:d）
+		最后退出，会提示是否保存, 回车就OK了
+
+    c. [高级:branch] -->  git filter-branch --<各种filter>  命令 <修改范围>
+        --msg-filter
+        --tree-filter
+        --env-filter
+
+        eg: 修改邮箱
+        git filter-branch --env-filter 'GIT_AUTHOR_EMAIL=john@example.com export GIT_AUTHOR_EMAIL' HEAD
+
+5. cherry-pick
+    a. 分支A上提交了一个更新，需要在分支B上应用这个更新。这时可以使用cherry-pick
+    b. 通过"git reflog"找到A上那个更新的SHA1哈希值，然后切换到B分支上使用"git cherry-pick 哈希值"。【可能需要自己解决冲突】
+
+6. git rebase 用法二
+    a.  原理：先将当前分支的HEAD引用指向目标分支和当前分支的共同祖先commit节点，然后将当前分支上的commit一个个apply到目标分支上，apply完以后再将HEAD引用指向当前分支。
+
+
+

@@ -1,0 +1,81 @@
+/*************************************************************************
+ > File Name: git-branch.doc
+ > Author: Leafxu
+ > Created Time: Fri 08 Jun 2018 02:54:30 PM CST
+ ************************************************************************/
+1. 分支简析
+    a. 只有主干的时，HEAD指针指向master链
+    b. 创建分支时，HEAD指针指向分支链(假定称为dev链)
+    c. 合并分支的时, master链同步dev链的改变
+    d. 删除分支， HEAD指回主干
+
+2. 命令简介
+    a. git branch 查看分支
+    b. git branch <name> 创建分支
+    c. git checkout <name> 切换分支
+    d. git checkout -b <name> 创建并切换分支
+    e. git merge <name> 合并分支
+    f. git branch -d <name> 删除分支
+    g. git branch -D <name> 强行删除分支 (未被合并的分支需要强行删除)
+    h. git merge --no-ff -m <msg>  <name>  保留分支信息进行合并
+	当前分支领先于合过来的分支
+	当前分支落后于合过来的分支
+	两个分支冲突 
+    i. git branch -r (查看远程分支) -a (查看所有分支包括远程)
+
+3. 解决冲突
+    a. 解决冲突就是把Git合并失败的文件手动编辑为我们希望的内容，再提交。
+    b. git log --graph命令可以看到分支合并图
+
+4. 分支策略
+    a. 最佳实践
+        ---> master是主分支[长存]，用来做正式发布版之后的保留历史，其他分支包括
+        ---> dev分支用来做正常开发[长存]
+        ---> feature分支用来做某些新需求-特性开发。[从dev创建,开发完合并到dev分支,删除]
+        ---> release用来做发布版历史，每次发布都是用release打包。 [从dev创建，发布到测试，测试稳定后，合并到master分支并删除]
+        ---> hotfix用来做发布版之后的一些及时迭代修复bug的工作。[从master创建，工作完成后，合并回master并删除]
+
+5. 创建合并分支简例
+    a. git checkout maste // 切换到master分支
+    b. git branch dev //创建dev分支
+    c. git checkout dev  // 切换到dev分支
+    d. git branch feature // 在dev分支上创建feature分支
+    e. git checkout feature // 切换到feature分支
+    f. modify & git add & git commit // 在feature分支修改并提交
+    g. git checkout dev // 切换回dev分支
+    h. git merge feature // 将feature合并到dev分支
+    i. git branch -d feature // 删除feature分支
+    j. git checkout -b release  // 在dev创建并切换到测试分支
+    k. test...
+    l. git checkout master // 切换到master
+    m. git merge release   // 合并test稳定分支到master分支
+    n. git checkout dev    // 切换到dev
+    o. git merge release   // 合并test稳定分支到dev [冲突密集发生]
+    p. git branch -d release // 删除test分支    
+    q. git checkout master  // 切换到master [假如产品急需打补丁]
+    r. git checkout -b hotfix // 创建并切换到补丁分支
+    s. hotfix dev.....  // 开发补丁
+    t. git checkout master // 切换到master
+    u. git merge hotfix // 合并补丁分支
+    v. git branch -d hotfix // 删除补丁分支
+
+6. 分支进度保存
+    a. 应用场景 -- 需要在不同分支中切换工作(工作进度的保存)
+    b. 相关命令
+        ---> git stash 保存进度并去清空暂存区数据; git status会发现工作树是clean的.
+        ---> git stash list 查看当前分支stash. 
+        ---> git stash apply恢复，但是恢复后，stash内容并不删除，你需要用git stash drop来删除.
+        ---> git stash pop，恢复的同时把stash内容也删了.
+    c. statsh的实现原理
+	---> 存放: .git/refs/stash
+	---> 查看引用对象类型: git cat-file -t 哈希值
+        ---> 查看引用对象内容: git cat-file -p 哈希值
+
+
+
+
+
+
+
+
+
