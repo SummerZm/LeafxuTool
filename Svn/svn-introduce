@@ -1,0 +1,93 @@
+CentOS下搭建SVN服务器
+
+一, 介绍SVN ---- 百度百科
+	SVN是Subversion的简称，是一个开放源代码的版本控制系统，相较于RCS、CVS，它采用了分支管理系统，它的设计目标就是取代CVS。
+	互联网上很多版本控制服务已从CVS迁移到Subversion。说得简单一点SVN就是用于多个人共同开发同一个项目，共用资源的目的。
+
+二, 安装SVN
+	官网下载： http://subversion.apache.org/packages.html
+	SVN客户端TortoiseSVN :https://tortoisesvn.net/downloads.html
+	
+	1. yum install subversion 
+	2. mkdir /svn
+	3. svnadmin create /svn/test/ -- 创建测试仓库
+	4. 关于目录的说明：
+		hooks目录：放置hook脚步文件的目录
+		locks目录：用来放置subversion的db锁文件和db_logs锁文件的目录，用来追踪存取文件库的客户端
+		format目录：是一个文本文件，里边只放了一个整数，表示当前文件库配置的版本号
+		conf目录：是这个仓库配置文件（仓库用户访问账户，权限）
+
+	5. 配置SVN服务的配置文件svnserver.conf：
+		anon-access = read   ##注意前边不要有空格，要顶齐
+		auth-access = write 
+		password-db = passwd
+		authz-db = authz           
+		realm = This is My First Test Repository   ##这个是提示信息
+
+	6. 配置访问用户及密码
+		[users]
+		# harry = harryssecret
+		# sally = sallyssecret
+		summer = 123456
+ 
+	7. 配置新用户的授权文件
+		#权限分为：r ,w, rw和null ,null空表示没有任何权限。
+		#auhtz配置文件中的每个参数，开头不能有空格，组要以@开头。
+		
+		[aliases]
+		# joe = /C=XZ/ST=Dessert/L=Snake City/O=Snake Oil, Ltd./OU=Research Institute/CN=Joe Average
+		[groups]
+		# harry_and_sally = harry,sally
+		# harry_sally_and_joe = harry,sally,&joe
+		# [/foo/bar]
+		# harry = rw
+		# &joe = r
+		# * =
+		# [repository:/baz/fuz]
+		# @harry_and_sally = rw
+		# * = r
+		admin = summer,test1
+		user = test2
+		
+		# [/]表示根目录及其以下的路径，根目录是svnserver启动时指定好的。上述实例中我们指定为:/svn/test([/]=/svn/test).
+		[/svn/test/] 
+		@admin = rw 
+		@user = r
+		
+		#[<版本库>:/项目/目录]
+		[test:/]   #test仓库赋予根权限，为了便于管理和权限的控制，可以把权限细化到版本库中相应的目录
+		
+		#@<用户组名> = 权限
+		@admin = rw #admin组有读写的权限
+		
+		<用户名> = 权限
+		@user = r   #user组只有读的权限
+		*=   #表示除了上面设置的权限用户组以外，其他所有用户都设置空权限，空权限表示禁止访问本目录，这很重要一定要加上。
+
+	8. svnserve -d -r /svn/ -- 启动svn服务
+		更改svnserver.conf时需要重启SVN服务，更改authz，passwd文件时则不需要重启服务
+		如果svnserve携带路径，则svn请求不用携带路径
+
+
+三, 通过客户端进行连接：
+	1. svn co svn://192.168.200.200/test
+	2. svn co svn://192.168.1.202/sadoc /data/svndata/ --username=xxxx --password=xxxx
+	3. svn update svn://192.168.200.200/test /svn --username=xxxx --password=xxxx
+	4. svn ls svn://192.168.200.200/test/ --username=xxxx --password=xxxx
+
+
+
+四, SVN目录树
+	1. 一般比较规范的SVN它会有三个目录，分别为：
+		/svn/trunk: 主干
+		/svn/branch: 个人或团队开发的分支
+		/svn/tag: 标记版本，比如某个版本开发好了。
+
+	2. 现在我要创建三个这样的目录，然后我要导入到版本库中去，这里会用到的是import命令
+		mkdir -p svn/{trunk,branch,tag}
+		svn import /svn/svn svn://192.168.200.200/test --username=xxxx --password=xxxx 
+	
+	3. 把主干的东西拷到一个分支
+		svn copy svn://192.168.200.200/test/trunk svn://192.168.200.200/test/branch/branch -m "create a branch" --username=xxxx --password=xxxx 
+
+	

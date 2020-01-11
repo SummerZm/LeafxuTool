@@ -1,0 +1,36 @@
+SVN+SSH协议工作方式全解--如何在Windows下配置TortoiseSVN和Subclipse访问SVN+SSH协议的Repository
+
+一，简介
+--------------------
+SVN+SSH (SVN over SSH) 协议的工作方式就是在SVN客户端与服务器端通过SSH连接推送命令和传输数据，实现更加安全的SVN通信。
+SVN+SSH方式访问Repository与普通的http或https方式最大的不同是通过SSH安全认证登录到远程主机建立SSH连结，
+PuTTY ： http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html
+TortoiseSVN:  http://tortoisesvn.tigris.org/
+Subclipse: http://subclipse.tigris.org/servlets/ProjectProcess?pageID=p4wYuA 
+本文原文链接：http://blog.csdn.net/bluishglc/article/details/8705864
+
+二，从SVN+SSH://地址谈起
+--------------------------------------------------
+	1. svn://youraccount@remoteserver/xxxx/xxxx
+		a. SSH远程主机的地址: remoteserver
+		b. 登入SSH远程主机的帐号: youraccount
+
+三，TortoiseSVN是如何自动登录到SSH远程主机的
+	1. TortoiseSVN共享putty的session, 可以利用putty的session自动建立ssh链接。
+	2. TortoiseSVN通过TortoisePlink与putty共享session。
+		a. plink复用PuTTY里保存好的session, 更重要的是PuTTY的session可以指定用户名, 使用密钥登录以及其他一些特性。
+		b. putty会将所有的session信息保存到注册表中(位置是HKEY_CURRENT_USER\Software\SimonTatham) 第三方工具可以从注册表中读取这些信息。
+		c. 若地址中没有指定登录账号，但是Tortoise却找到了对应的putty session，那么Tortoise就使用该个账号登录了。		
+	
+四，SSH的安全认证方式
+	1. "基于口令"的安全认证 -- 帐号+密码的认证
+	2. "基于密钥"的安全认证
+		a. 秘钥生成工具 --linux下使用openssh的ssh-keygen，windows下使用PuTTY的puttygen
+		b. 使用一个公钥和一个私钥.
+			公钥会放置于服务器端ssh指定的位置。
+			私钥则由本人妥善保存，一般生成私钥时还会为它设置一个密码短语passphrase。
+			使用ssh-add命令将私钥的密码交给ssh-agent进行管理会直接使用缓存起来的passphrase，而不会让你每次手动的输入。
+			
+			
+五，代理环境下的配置
+	1. 如果工作网络是使用代理上网的，那么需要在创建putty saved session时，在Connectiong->Proxy项上设置代理服务器的地址，端口和类型。

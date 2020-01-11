@@ -1,0 +1,50 @@
+1. apache svn+http 配置文件 Satisfy Any  -- 会导致值svn checkout失败。提示: no root of edit operation.
+2. 安装 libapache2-mod-svns
+	a. apt-get和编译安装的可以兼容. 适配好库和配置的路径就OK了。
+	b. 模块的加载顺序的影响
+		(正确加载顺序）
+		LoadModule dav_module modules/mod_dav.so
+		LoadModule dav_svn_module /usr/lib/apache2/modules/mod_dav_svn.so
+		LoadModule authz_svn_module /usr/lib/apache2/modules/mod_authz_svn.so
+
+3. 创建仓库
+	mkdir /var/www/svn
+	cd /var/www/svn
+	svnadmin create repo
+	chown -R apache:apache repo
+
+4. 创建登录账号、密码
+	htpasswd -bc /var/www/svn/passwd user1 123456
+
+5. 修改配置文件 /etc/httpd/conf.d/subversion.conf
+
+	 <Location /repos>
+	   DAV svn
+	   SVNParentPath /var/www/svn #svn库的根目录
+	      AuthType Basic
+	      AuthName "Authorization Realm" #浏览器登陆时的提示信息
+	      AuthUserFile  /var/www/svn/passwd
+	      AuthzSVNAccessFile /var/www/svn/repo/conf/authz
+	      Require valid-user #在authfile中所有的用户都可以访问
+	      #Satisfy Any 
+	</Location>
+
+6. 配置svn权限/var/www/svn/repo/conf/authz  [注： 格式和svn模式一样]
+	[/]
+	user1=rw
+
+	[test:/]
+	xwh=w
+
+	[projects:/]  #使用svnadmin创建项目后，需要在这进行配置，不然不能通过webs访问
+	gc=rw
+
+7. 启动apache，输入地址访问svn
+	http://IP/repos/repo　　#输入创建的用户名和密码就可以登录了
+
+8.命令测试
+	svn co http://localhost/repos/repo --username user1 #checkout仓库
+	svn mkdir "http://localhost/repos/repo/branches" "http://localhost/repos/repo/tags" "http://localhost/repos/repo/trunk" -m "create a new project" --username "user1" #创建项目目录		
+
+9. 在http的基础上拓展成https
+
