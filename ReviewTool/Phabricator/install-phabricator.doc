@@ -1,0 +1,263 @@
+/*************************************************************************
+ > File Name: yum-install-phabricator.doc
+ > Author: Leafxu
+ > Created Time: Thu 24 May 2018 05:46:02 PM CST
+ ************************************************************************/
+
+ 1. 下载代码 (放在同级目录)
+    https://github.com/phacility/libphutil.git
+    https://github.com/phacility/arcanist.git
+    https://github.com/phacility/phabricator.git
+    注：解压好通过winscp放到设备上的phabricator，会出现软连接丢失的情况。
+
+ 2. 配置数据库 (执行命令)
+    a. cd somewhere/phabricator
+    b. ./bin/config set mysql.pass xxxx
+    c. ./bin/config set mysql.user root
+    d. ./bin/config set mysql.port 3306
+    e. ./bin/config set mysql.host 47.74.134.70
+    f. ./bin/storage upgrade [创建数据库]
+
+ 3. 网页创建phabricator管理用户
+    a. 访问自己搭建的phabricator项目注册用户
+    b. 用户名: phabricator
+    c. 密码: A201211672128Lxxxxx
+
+ 4. 命令行创建用户
+    a. ./bin/accountadmin  创建用户
+    b. ./bin/remove destroy @username 删除用户
+    c. ./bin/config set phabricator.base-uri 'http://192.168.1.253:20001/' 设置base uri
+    d. 有些系统需要为用户生成 .bashrc .profile文件
+    d. phabricator配置优先级
+        数据库：数据被存储在数据库中，管理员可以通过Web页面进行修改，拥有最高的优先级，并可以对其他配置源进行覆盖。
+        本地数据：数据被存储在~/conf/local/config.json，可以通过命令行进行修改或者进行用终端进行修改。
+        配置文件：数据被存储在/conf/文件夹下，通过修改conf/local/ENVIRONMENT文件或设置环境变量PHABRICATOR_ENV生效。优先级最低。
+   
+ 5. 解决phabricator警告    
+    a. 在网页上设置时区为 Asia/Shanghai
+    b. 创建仓库目录 mkdir /var/repo     [根据实际情况创建]
+    c. 配置phabricator插件系统路径PATH
+    d. 优化数据库
+
+ 6. 配置phabricator系统用户
+    a. webs 服务器用户 --> [nginx 已有]
+    b. phabricator 守护进程用户  --> [phabricator自己创建]
+        ---> useradd phabricator
+        ---> passwd A201211672128
+        ---> usermod -g root nginx [设置主组为root] / gpasswd -a phabricator root [设置辅组为root]
+    c. git 访问代码仓库用户 --> [git 已有]
+
+ 7. 配置sudo权限  visudo
+    a. phabricator	ALL=(ALL) 	NOPASSWD:ALL    [尽量给到root权限]
+    b. nginx	ALL=(phabricator) SETENV: NOPASSWD: /usr/bin/git, /usr/bin/git-upload-pack, /usr/bin/git-receive-pack
+    c. git	ALL=(phabricator) SETENV: NOPASSWD: /usr/bin/git, /usr/libexec/git-http-backend
+
+ 8. nginx配置fgciwrap   [Nginx原生不支持CGI执行，所以需要拓展。如果启用了php-fpm，则不需要配置的fcgi]
+    a. install fgciwrap
+        ---> git clone git://github.com/gnosek/fcgiwrap.git
+        ---> cd fcgiwrap
+        ---> autoreconf -i
+        ---> ./configure
+        ---> make && make install
+ 
+ 9. 检查文件目录权限 [不一定可用]
+    a. /var/repo 权限检查,最好不要放在这位置 [vcs-user用户需要有读权限]
+    b. 为系统用户生成功公秘钥，并放到git用户的.ssh目录下 [观察远程仓库需要使用]
+    c. webs端的在phabricator --> 用户 --> setting 生成 ssh key，然后上传公钥并且把私钥存到自己电脑的用户目录下.ssh文件夹中。[window用户创建这个文件夹有些曲折]
+       上传的ssh pub key会进入数据库管理
+    d. phabricator 的ssh脚本会接管 ssh 验证，从自身的数据库中进行身份验证
+    e. 观察远程仓库代码易错区: 走的是远程仓库的地址，而不是上面配置的ssh:2222端口(这个端口是phabricator自身托管用的)。
+
+ 10. php opcache extension install
+        a. https://blog.csdn.net/abcdocker/article/details/55505063  // php opcache配置中文解说
+        b. http://blog.sina.com.cn/s/blog_7e69473f01012tim.html     // php apcu install
+
+ 11. 配置SSH+git
+
+        a. vcs-user: 要有执行php的权限/环境变量设置
+        b. 确保执行phabricator-ssh-hook.sh的 bash设置的环境变量PATH有php的存放路径  [openssh的版本]
+            调试(从中可以看到ssh登录时的环境变量):
+            [servr]: /usr/sbin/ssh -d -d -d -f /etc/ssh/sshd_config.phabricator
+            [client]: ssh -v -v -v -p 2222 git@www.leafxu.top
+            [solve]: 创建软连接[svn] or phabricator-ssh-hook.sh 添加 EXPORT命令设备环境变量[git]
+
+        c.  /usr/sbin/sshd -f /etc/ssh/sshd_config.phabricator [配置ssh_config.phabricator使其不使用%.h/.ssh/下的文件验证sshkey]
+
+        d. 创建 phabricator-ssh-hook.sh
+            从phabricator/resources/sshd/phabricator-ssh-hook.sh 拷贝模板到 /usr/libexec/phabricator-ssh-hook.sh （或其他路径）。   
+            sudo chown root /path/to/phabricator-ssh-hook.sh
+            sudo chmod 755 /path/to/phabricator-ssh-hook.sh
+            如果你不做这些事情，sshd将会拒绝执行钩子命令。
+
+        e. 创建Phabricator的sshd_config配置文件
+            在phabricator/resources/sshd/sshd_config.phabricator.example拷贝模板到 /etc/ssh/sshd_config.phabricator（或者其他路径）。
+            打开这个文件，然后修改 AuthorizedKeysCommand 和 AuthorizedKeysCommandUser 来适配你当前使用的系统。
+            该文件中保存有ssh port 22，这是ssh默认端口(此处根据自身情况，迁移到2222端口)。
+            以上步骤会将phabricator-ssh-hook.sh和sshd_config关联起来，在sshd执行时会自动执行。
+
+        f. 设置成功后，启动phabricator sshd守护进程(c步骤)
+        g. 测试 echo {} | ssh vcs-user@phabricator.yourcompany.com conduit conduit.ping
+            配置成功则: {"result":"orbital","error_code":null,"error_info":null}
+
+        h. 启动网页守护进程 ./bin/phd start (phabricator根目录下执行)
+
+ 12. clone路径
+        a. svn+ssh:// 不支持在hostname后面添加端口号。即 svn+ssh://svn@www.leafxu.top/git/opensips  支持
+            [solve]: 
+              在客户端的.subversion/config 中设置tunnel,加上 ssh = ssh -p 2222
+              把 phabricator/conf/local/local.json中的端口设置去掉           
+
+        b. ssh://支持。即 ssh://git@www.leafxu.top/git/opensips
+
+        c. 在phabricator网页上创建仓库时,若填写Ropesitory ,call sign, short name 则会相应出现  [这些路径自动映射到/var/repo]
+           repository:     ssh://git@www.leafxu.top:2222/diffusion/2/test.git
+           call sign:     ssh://git@www.leafxu.top:2222/source/2/test.git
+           shortname:     ssh://git@www.leafxu.top:2222/diffusion/short name/test.git
+    
+ 13. 观察一个远程仓库
+        a. 为phabricator的守护进程用户生成秘钥对，需要设置密码口令。
+        b. 将生成的公钥上传至(追加写入)远程主机登录用户的authoried_keys文件中。
+        c. 将生成的秘钥通过phabricator web端的仓库url 的秘钥证书选项上传至数据库后中。
+
+ 14, Debug
+        A. web界面调试: 在搜索框输入daemon进入，web页面调试模块
+        B. 命令行调试: 到项目安装目录，这里是 /work/projects/test/phabricator
+            执行命令: ./bin/config/phd log --id xx （查看的守护进程的日志， id值可从web调试模块获得）
+
+ Addition. 
+    1. 配置虚拟主机：这里提供两个apache版本的配置方法：
+        Apache/2.4.18 (Unix)
+        Step1：添加虚拟主机
+        a. apache配置文件http.conf. 找到#Include conf/extra/http-vhosts.conf， 去掉注释#
+        b. 在extra目录下的http-vhosts.conf 文件中加入
+
+                <VirtualHost *:20001>
+                    # Change this to the domain which points to your host.
+                    ServerName ktphabricator.com
+                    # Change this to the path where you put 'phabricator' when you checked it
+                    # out from GitHub when following the Installation Guide.
+                    # Make sure you include "/webroot" at the end!
+                    # 需要 mod_rw
+                    
+                    DocumentRoot /home/test/habricator/webroot
+                    RewriteEngine on
+                    RewriteRule ^/rsrc/(.*)     -                       [L,QSA]
+                    RewriteRule ^/favicon.ico   -                       [L,QSA]
+                    RewriteRule ^(.*)$          /index.php?__path__=$1  [B,L,QSA]
+                    <Directory "/home/test/habricator/webroot">
+                        Require all granted
+                    </Directory>
+                </VirtualHost>
+        c. apache配置文件http.conf.添加监听端口。加入
+            Listen 192.168.1.103:20001
+
+    2. Apache/2.4.10 (Debian)
+        Step1：添加虚拟主机
+        a. site-enabled中的文件是软连接到site-available中配置
+        b. site-available中配置创建虚拟主机配置文件内容如下：
+
+                <VirtualHost *:20001>
+                    # Change this to the domain which points to your host.
+                    ServerName ktphabricator.com
+                    # Change this to the path where you put 'phabricator' when you checked it
+                    # out from GitHub when following the Installation Guide.
+                    # Make sure you include "/webroot" at the end!
+                    # 需要 mod_rw
+                    
+                    DocumentRoot /home/test/habricator/webroot
+                    RewriteEngine on
+                    RewriteRule ^/rsrc/(.*)     -                       [L,QSA]
+                    RewriteRule ^/favicon.ico   -                       [L,QSA]
+                    RewriteRule ^(.*)$          /index.php?__path__=$1  [B,L,QSA]
+                    <Directory "/home/test/habricator/webroot">
+                        Require all granted
+                    </Directory>
+                </VirtualHost>
+        c. 在site-enabled中创建软连接文件，连接到上一步创建的文件中
+        d. 在ports.conf中添加监听端口
+            Listen 20001
+
+     相关链接
+     https://blog.csdn.net/cncrystal/article/details/8281162
+     https://wenku.baidu.com/view/554f64118762caaedc33d45a.html
+
+ Note:
+    1. php版本5.6以上且不能是php7.0.
+    2. php需要安装的模块 curl, openssl, mbstring.
+
+ Question:
+    1. 设置：./bin/config set mysql.localhost, 可能会遇到的问题:
+        [2018-04-28 03:49:17] PHLOG: 'Retrying (1) after AphrontConnectionQueryException: Attempt to connect to root@127.0.0.1 failed with error #2003:
+            Can't connect to MySQL server on '127.0.0.1' (111).' at
+            [/work/projects/test/libphutil/src/aphront/storage/connection/mysql/AphrontBaseMySQLDatabaseConnection.php:108]
+        解决提示：vim /etc/mysql/my.cnf ===> bind 127.0.0.1
+
+    2. isable PHP always_populate_raw_post_data
+        资料: $POST 、$HTTP_RAW_POST_DATA、php://input三者之间的区别?
+            $_POST是我们最常用的获取POST数据的方式，它是以关联数组方式组织提交的数据，并对此进行编码处理，
+            如urldecode，甚至编码转换，识别的数据类型是PHP默认识别的数据类型 application/x-www.form-urlencoded
+            无法解析如text/xml，application/json等非 application/x-www.form-urlencoded 数据类型的内容
+
+            $HTTP_RAW_POST_DATA 用Content-Type=application/json 类型，提交的POST数据这时候 $_POST 就无法获取到了，
+            但是使用 $GLOBALS['HTTP_RAW_POST_DATA'] 可以获取到。PHP无法识别Content-Type的时候，就会把 POST 数据填入到 $HTTP_RAW_POST_DATA 中。
+            需要设置 php.ini 中的 always_populate_raw_post_data 值为 On 才会生效,当$_POST 与 php://input可以取到值时 $HTTP_RAW_POST_DATA 为空
+            不能用于 enctype="multipart/form-data"
+
+            PHP7中已经移除了这个全局变量，用 php://input 替代
+            php://input 可通过输入流以文件读取方式取得未经处理的POST原始数据，允许读取 POST 的原始数据。
+            和$HTTP_RAW_POST_DATA 比起来，它给内存带来的压力较小。
+
+        解决：设置为-1
+            /etc/php5/apache2/php.ini
+            always_populate_raw_post_data   "-1"
+
+    3. 退出admin用户时，若出现以下问题
+        This Phabricator install is not configured with any enabled authentication providers which can be used to log in. 
+        If you have accidentally locked yourself out by disabling all providers, 
+        you can use phabricator/bin/auth recover <username> to recover access to an administrative account.
+
+        解决：
+        执行 phabricator/bin/auth recover <username>
+        会生成：/login/once/recover/1/biwsvc3rnzaoiyp3og6zlqzvdjicl4mu/
+        在浏览器输入 192.168.1.253:8080/login/once/recover/1/biwsvc3rnzaoiyp3og6zlqzvdjicl4mu/访问
+
+    4. 缓冲区太小，影响性能. 没有处理此问题 【innodb_buffer_pool_size】
+        Database host "192.168.1.253:3306" is configured with a very small innodb_buffer_pool_size (128 MB).
+        This may cause poor database performance and lock exhaustion.
+
+        There are no hard-and-fast rules to setting an appropriate value, 
+        but a reasonable starting point for a standard install is something like 40% of the total memory on the machine. 
+        For example, if you have 4GB of RAM on the machine you have installed Phabricator on, you might set this value to 1600M.
+
+        You can read more about this option in the MySQL documentation to help you make a decision about how to configure it for your use case. 
+        To adjust the setting, add something like this to your my.cnf file (in the [mysqld] section), 
+        replacing 1600M with an appropriate value for your host and use case. Then restart mysqld:
+
+        innodb_buffer_pool_size=1600M
+        If you're satisfied with the current setting, you can safely ignore this setup warning.
+        The current MySQL configuration has this value:
+
+        innodb的innodb_buffer_pool_size和MyISAM的key_buffer_size
+
+        相关资料 
+        innodb_buffer_pool_size 对Innodb表来说非常重要。
+        Innodb相比MyISAM表对缓冲更为敏感。MyISAM可以在默认的 key_buffer_size 设置下运行的可以，
+        然而Innodb在默认的 innodb_buffer_pool_size 设置下却跟蜗牛似的。
+        由于Innodb把数据和索引都缓存起来，无需留给操作系统太多的内存，因此如果只需要用Innodb的话则可以设置它高达 70-80% 的可用内存。
+        如果你的数据量不大，并且不会暴增，那么无需把 innodb_buffer_pool_size 设置的太大了。
+        innodb_buffer_pool_size = 8000M
+
+        innodb_pool_buffer_size对innodb性能的影响
+        innodb_pool_buffer_size是影响innodb性能最重要的参数，指的是innodb缓冲的大小。
+        一般来说，它越大Innodb的吞吐量(单位： tps)就越高。所以，在不影响服务器上其他程序正常工作的情况下，这个值总是越大越好。
+        但是当innodb做crash recovery的时候，大的pool buffer会让recovery奇慢无比。
+        一种折衷的解决方法就是：启动的时候用小的pool buffer，恢复完成以后改用大的pool bufer。
+
+ End:
+  Link1: http://doomzhou.github.io/git/linux/2016/03/30/git-over-http-by-nginx.html [通过nginx git-http-backend 部署git 仓库]
+  Link2: http://xfeng.me/nginx-support-fcgi/    [fcgi, spawn-fcgi, fcgi-wrap配置与简介]
+  Link3: https://blog.csdn.net/u013474436/article/details/52972699 [nginx 与 php-fpm] ---> [配置了php-fpm还需要配fcgi吗？不需要]
+
+
+
+

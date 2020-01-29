@@ -1,0 +1,434 @@
+0. 相关细节问题
+	a. 需要登录数据库，创建review数据库。
+	b. 需要安装apache支持python的相关模块。 【mod_wsgi, mod_python】
+	c. 网站安装的目录,监听端口。
+	d. 选要安装python包管理工具。
+	e. 可能要安装的库 build-essential python-dev libffi-dev libssl-dev patch  【容易出现兼容问题】
+
+1. mysql 5.7
+2. pip
+	a. curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+	b. python get-pip.py 
+	==========================================================
+	python 包管理工具简介
+	distutils，setuptools，distribute，setup.py，easy_install，pip
+	1. distutils: 是python标准库的一部分，这个库的目的是为开发者提供一种方便的打包方式， 同时为使用者提供方便的安装方式。
+	2. setup.py: 是基于distutils实现的，可以进行打包或者安装了。
+	3. setuptools: 是对distutils的增强，引入了包依赖管理。通过ez_setup.py来安装setuptools。
+		a. setuptools使用了一种新的文件格式（.egg），可以为Python包创建 egg文件。setuptools 可以识别.egg文件，并解析、安装它
+
+	4. distribute: 是setuptools的一个分支版本, 现在distribute并回了setuptools中。
+	5. easy_install: 是基于setuptools/distribute的一个工具，方便了包的安装和升级。
+	6. pip是目前最流行的Python包管理工具，它被当作easy_install的替代品，但是仍有大量的功能建立在setuptools之上。
+		a. easy_install 有很多不足：
+			1. 安装事务是非原子操作
+			2. 只支持 svn，没有提供卸载命令
+			3. 安装一系列包时需要写脚本
+
+		b. pip的使用非常简单，并支持从任意能够通过 VCS 或浏览器访问到的地址安装 Python 包：
+			*安装: pip install SomePackage
+			*卸载: pip uninstall SomePackage
+
+		c. pip安装
+			1.下载get-pip.py文件，然后执行 python get-pip.py 进行安装（如果没有安装setuptools，那么get-pip.py会帮忙安装）
+			2.现在pip源码包，然后通过setup.py进行安装
+
+3. apt-get install build-essential python-dev libffi-dev libssl-dev patch
+	a. build-essential -- c/c++编译环境
+	b. libffi -- 用于高级语言之间的相互调用
+
+4. pip install ReviewBoard
+	a. chardet python的字符检测库
+		-- pip install --ignore-installed  ReviewBoard
+
+5. apt-get install python-mysqldb   pip install -U mysql-python
+	a. mysql 引擎 与 mariadb 的兼容性问题
+	   解决：ln -s /usr/bin/mariadb_config /usr/bin/mysql_config
+
+5.1  apache出现forbbin可能需要重启apache; 添加 Require all granted.
+5.2	 apt-get install 安装的apache mod, 可以被编译的apache 使用只要配置 loadMoulde 就可以了
+	（ apt-get install 安装的apache mod 会在指定的目录下生成 conf|loader 文件)
+
+6. 数据库配置
+	$ mysql -u root -p
+	mysql> CREATE DATABASE reviewboard CHARACTER SET utf8;
+	mysql> CREATE USER 'myuser'@'localhost' IDENTIFIED BY 'mypassword';
+	mysql> GRANT ALL PRIVILEGES ON reviewboard.* to 'myuser'@'localhost';
+
+7. rb-site安装
+	a. 执行命令 rb-site install /var/www/reviews.example.com ，进入交互界面：
+
+		database : review : review
+		--------------
+		* What memcached host should be used?
+	    This is in the format of hostname:port
+	    The default is localhost:11211
+	    --------------
+	    * Create an administrator account
+	    To configure Review Board, you'll need an administrator account.
+	    It is advised to have one administrator and then use that account
+	    to grant administrator permissions to your personal user account.
+
+	    If you plan to use NIS or LDAP, use an account name other than
+	    your NIS/LDAP account so as to prevent conflicts.
+
+	    The default is admin
+		Username [admin]: admin
+		Password: admin
+		Confirm Password:
+		---------------------------------------
+		Setting up support ... OK
+		* The site has been installed
+
+		    The site has been installed in /var/www/reviews
+		    Sample configuration files for web servers and cron are available
+		    in the conf/ directory.
+
+		    You need to modify the ownership of the following directories and
+		    their contents to be owned by the web server:
+		        * /var/www/reviews/htdocs/media/uploaded
+		        * /var/www/reviews/htdocs/media/ext
+		        * /var/www/reviews/htdocs/static/ext
+		        * /var/www/reviews/data
+
+		    For more information, visit:
+		    https://www.reviewboard.org/docs/manual/3.0/admin/installation/creating-sites/
+
+		* Get more out of Review Board
+		    To enable PDF document review, enhanced scalability, GitHub
+		    Enterprise support, and more, download Power Pack at:
+		    https://www.reviewboard.org/powerpack/
+		    Your install key for Power Pack is:
+		    8292924df2c887fd9bc38697aca318a789acad9d
+		    Support contracts for Review Board are also available:
+		    https://www.beanbaginc.com/support/contracts/
+
+		///////////////////////////////////////////////////////////////////////////////////////
+
+		* Welcome to the Review Board site installation wizard
+		    This will prepare a Review Board site installation in:
+		    /var/www/reviews
+		    We need to know a few things before we can prepare your site for
+		    installation. This will only take a few minutes.
+
+		* Make sure you have the modules you need
+		    Depending on your installation, you may need certain Python
+		    modules and servers that are missing.
+
+		    If you need support for any of the following, you will need to
+		    install the necessary modules and restart the install.
+		    Databases (optional):
+		        * PostgreSQL (psycopg2)
+				
+		* What's the host name for this site?
+		    This should be the fully-qualified host name without the http://,
+		    port or path.
+
+		Domain Name: 192.168.1.114
+		* What URL path points to Review Board?
+		    Typically, Review Board exists at the root of a URL. For example,
+		    http://reviews.example.com/. In this case, you would specify "/".
+		    
+			However, if you want to listen to, say,
+		    http://example.com/reviews/, you can specify "/reviews/".
+		    
+			Note that this is the path relative to the domain and should not
+		    include the domain name.
+
+		    The default is /
+
+		Root Path [/]:
+		* What database type will you be using?
+		    You can type either the name or the number from the list below.
+		    (1) mysql
+		    (2) sqlite3 (not supported for production use)
+		Database Type: 1
+
+		* What database name should Review Board use?
+		    NOTE: You need to create this database and grant user modification
+		    rights before continuing. See your database documentation for more
+		    information.
+		    The default is reviewboard
+
+		Database Name [reviewboard]:
+		* What is the database server's address?
+		    This should be specified in hostname:port form. The port is
+		    optional if you're using a standard port for the database type.
+		    The default is localhost
+		Database Server [localhost]:
+		
+		* What is the login and password for this database?
+		    This must be a user that has table creation and modification
+		    rights on the database you already specified.
+
+		Database Username: review
+		Database Password:
+		Confirm Database Password:
+
+		* What memcached host should be used?
+		    This is in the format of hostname:port
+		    The default is localhost:11211
+		Memcache Server [localhost:11211]:
+
+		* Create an administrator account
+		    To configure Review Board, you'll need an administrator account.
+		    It is advised to have one administrator and then use that account
+		    to grant administrator permissions to your personal user account.
+		    If you plan to use NIS or LDAP, use an account name other than
+		    your NIS/LDAP account so as to prevent conflicts.
+		    The default is admin
+		Username [admin]: admin
+		Password:
+		Confirm Password:
+		E-Mail Address:
+
+		[!] You must answer this question.
+		E-Mail Address: 1254551981@qq.com
+
+		Company/Organization Name (optional): summer
+		* Enable collection of data for better support
+
+		    We would like to periodically collect data and statistics about
+		    your installation to provide a better support experience for you
+		    and your users.
+		    The data collected includes basic information such as your company
+		    name, the version of Review Board, and the size of your install.
+		    It does NOT include confidential data such as source code. Data
+		    collected never leaves our server and is never given to any third
+		    parties for any purposes.
+
+		    We use this to provide a user support page that's more specific to
+		    your server. We also use it to determine which versions to
+		    continue to support, and to help track how upgrades affect our
+		    number of bug reports and support incidents.
+
+		    You can choose to turn this off at any time in Support Settings in
+		    Review Board.
+
+		Allow us to collect support data? [Y/n]: y
+
+		* Installing the site...
+		Building site directories ... OK
+		Building site configuration files ... OK
+		Creating database ...
+		[!] There was an error synchronizing the database. Make sure the
+		    database is created and has the appropriate permissions, and then
+		    continue.
+		[!] Details: (1045, "Access denied for user 'review'@'localhost'
+		    (using password: YES)")
+
+		Press Enter to continue
+
+		[!] There was an error synchronizing the database. Make sure the
+		    database is created and has the appropriate permissions, and then
+		    continue.
+		[!] Details: (1045, "Access denied for user 'review'@'localhost'
+		    (using password: YES)")
+
+		Press Enter to continue
+
+		[!] There was an error synchronizing the database. Make sure the
+		    database is created and has the appropriate permissions, and then
+		    continue.
+		[!] Details: (1045, "Access denied for user 'review'@'localhost'
+		    (using password: YES)")
+
+		Press Enter to continue
+
+		[!] There was an error synchronizing the database. Make sure the
+		    database is created and has the appropriate permissions, and then
+		    continue.
+		[!] Details: (1045, "Access denied for user 'review'@'localhost'
+		    (using password: YES)")
+
+		Press Enter to continue
+
+		[!] There was an error synchronizing the database. Make sure the
+		    database is created and has the appropriate permissions, and then
+		    continue.
+		[!] Details: (1045, "Access denied for user 'review'@'localhost'
+		    (using password: YES)")
+
+		Press Enter to continue
+
+		[!] There was an error synchronizing the database. Make sure the
+		    database is created and has the appropriate permissions, and then
+		    continue.
+		[!] Details: (1045, "Access denied for user 'review'@'localhost'
+		    (using password: YES)")
+
+		Press Enter to continue
+		Creating tables ...
+		Creating table corsheaders_corsmodel
+		Creating table django_admin_log
+		Creating table auth_permission
+		Creating table auth_group_permissions
+		Creating table auth_group
+		Creating table auth_user_groups
+		Creating table auth_user_user_permissions
+		Creating table auth_user
+		Creating table django_content_type
+		Creating table django_site
+		Creating table django_session
+		Creating table extensions_registeredextension
+		Creating table integrations_integrationconfig
+		Creating table djblets_privacy_storedconsentdata
+		Creating table siteconfig_siteconfiguration
+		Creating table oauth2_provider_application
+		Creating table oauth2_provider_grant
+		Creating table oauth2_provider_accesstoken
+		Creating table oauth2_provider_refreshtoken
+		Creating table accounts_reviewrequestvisit
+		Creating table accounts_profile_starred_review_requests
+		Creating table accounts_profile_starred_groups
+		Creating table accounts_profile
+		Creating table accounts_localsiteprofile
+		Creating table accounts_trophy
+		Creating table attachments_fileattachmenthistory
+		Creating table attachments_fileattachment
+		Creating table changedescs_changedescription
+		Creating table diffviewer_filediffdata
+		Creating table diffviewer_rawfilediffdata
+		Creating table diffviewer_filediff
+		Creating table diffviewer_diffset
+		Creating table diffviewer_diffsethistory
+		Creating table hostingsvcs_hostingserviceaccount
+		Creating table notifications_webhooktarget_repositories
+		Creating table notifications_webhooktarget
+		Creating table reviewboard_oauth_application
+		Creating table reviews_group_users
+		Creating table reviews_group
+		Creating table reviews_defaultreviewer_repository
+		Creating table reviews_defaultreviewer_people
+		Creating table reviews_defaultreviewer_groups
+		Creating table reviews_defaultreviewer
+		Creating table reviews_comment
+		Creating table reviews_fileattachmentcomment
+		Creating table reviews_generalcomment
+		Creating table reviews_screenshot
+		Creating table reviews_reviewrequest_changedescs
+		Creating table reviews_reviewrequest_target_people
+		Creating table reviews_reviewrequest_inactive_screenshots
+		Creating table reviews_reviewrequest_screenshots
+		Creating table reviews_reviewrequest_depends_on
+		Creating table reviews_reviewrequest_inactive_file_attachments
+		Creating table reviews_reviewrequest_file_attachment_histories
+		Creating table reviews_reviewrequest_target_groups
+		Creating table reviews_reviewrequest_file_attachments
+		Creating table reviews_reviewrequest
+		Creating table reviews_screenshotcomment
+		Creating table reviews_review_comments
+		Creating table reviews_review_file_attachment_comments
+		Creating table reviews_review_general_comments
+		Creating table reviews_review_screenshot_comments
+		Creating table reviews_review
+		Creating table reviews_reviewrequestdraft_target_people
+		Creating table reviews_reviewrequestdraft_depends_on
+		Creating table reviews_reviewrequestdraft_file_attachments
+		Creating table reviews_reviewrequestdraft_screenshots
+		Creating table reviews_reviewrequestdraft_inactive_screenshots
+		Creating table reviews_reviewrequestdraft_inactive_file_attachments
+		Creating table reviews_reviewrequestdraft_target_groups
+		Creating table reviews_reviewrequestdraft
+		Creating table reviews_statusupdate
+		Creating table scmtools_tool
+		Creating table scmtools_repository_review_groups
+		Creating table scmtools_repository_users
+		Creating table scmtools_repository
+		Creating table site_localsite_users
+		Creating table site_localsite_admins
+		Creating table site_localsite
+		Creating table webapi_webapitoken
+		Creating table django_project_version
+		Creating table django_evolution
+		INFO:root:Using reviewboard.scmtools.svn.pysvn backend for SVN
+		Registering new SCM Tool Subversion (reviewboard.scmtools.svn.SVNTool) in database
+		Registering new SCM Tool Git (reviewboard.scmtools.git.GitTool) in database
+		Registering new SCM Tool Bazaar (reviewboard.scmtools.bzr.BZRTool) in database
+		Registering new SCM Tool CVS (reviewboard.scmtools.cvs.CVSTool) in database
+		Registering new SCM Tool Perforce (reviewboard.scmtools.perforce.PerforceTool) in database
+		Registering new SCM Tool Plastic SCM (reviewboard.scmtools.plastic.PlasticTool) in database
+		Registering new SCM Tool ClearCase (reviewboard.scmtools.clearcase.ClearCaseTool) in database
+		Registering new SCM Tool Mercurial (reviewboard.scmtools.hg.HgTool) in database
+		Installing baseline version
+		Evolutions in auth baseline: auth_delete_message, auth_unique_together_baseline
+		Evolutions in contenttypes baseline: contenttypes_unique_together_baseline
+		Evolutions in sessions baseline: session_expire_date_db_index
+		Evolutions in privacy baseline: audit_indentifier
+		Evolutions in accounts baseline: is_private, timezone, open_an_issue, extra_data, timezone_length_30, localsiteprofile_permissions, unique_together_baseline, profile_show_closed, profile_should_send_email, profile_should_send_own_updates, profile_default_use_rich_text, reviewrequestvisit_visibility, profile_settings
+		Evolutions in attachments baseline: file_attachment_orig_filename, file_attachment_file_max_length_512, file_attachment_repo_info, file_attachment_repo_path_no_index, file_attachment_repo_revision_max_length_64, file_attachment_revision, file_attachment_ownership, file_attachment_uuid
+		Evolutions in changedescs baseline: fields_changed_longtext, rich_text, changedesc_user
+		Evolutions in diffviewer baseline: add_parent_diffs, filediff_filenames_1024_chars, diffset_basedir, filediff_status, add_diff_hash, diffsethistory_diff_updated, filediffdata_line_counts, diffset_base_commit_id, filediffdata_extra_data, all_extra_data, raw_diff_file_data
+		Evolutions in hostingsvcs baseline: account_hosting_url, account_hosting_url_max_length_255, account_unique_together_baseline
+		Evolutions in notifications baseline: webhooktarget_extra_state, webhooktarget_extra_data_null
+		Evolutions in oauth baseline: disabled_for_security
+		Evolutions in reviews baseline: change_descriptions, last_review_timestamp, shipit_count, default_reviewer_repositories, null_repository, localsite, group_incoming_request_count, group_invite_only, group_visible, default_reviewer_local_site, add_issues_to_comments, file_attachments, file_attachment_comment_extra_data, review_request_last_review_activity_timestamp, review_request_depends_on, commit_id, file_attachment_comment_diff_id, rich_text, base_comment_extra_data, unique_together_baseline, extra_data, review_request_issue_counts, group_mailing_list_charfield, review_request_draft_commit_id, group_email_list_only, review_request_file_attachment_histories, review_request_summary_index, review_request_summary_index_manual, split_rich_text, is_default_group, general_comments, add_owner_to_draft, status_update_timeout, comment_issue_verification, review_request_screenshot_attachment_counters
+		Evolutions in scmtools baseline: bugzilla_url_charfield, repository_raw_file_url, repository_visible, repository_path_length_255, localsite, repository_access_control, group_site, repository_hosting_accounts, repository_extra_data_null, unique_together_baseline, repository_archive, repository_hooks_uuid, repository_raw_password, repository_name_length_255
+		Evolutions in site baseline: localsite_public, localsite_extra_data
+		Evolutions in webapi baseline: webapitoken_jsonfield_null
+		Installing custom SQL ...
+		Installing indexes ...
+		Installed 0 object(s) from 0 fixture(s)
+		OK
+		Performing migrations ... No evolution required.
+		OK
+		Creating administrator account ... OK
+		Saving site settings ... Saving site /var/www/reviews to the sitelist /etc/reviewboard/sites
+
+		OK
+		Setting up support ... OK
+
+
+		* The site has been installed
+
+		    The site has been installed in /var/www/reviews
+
+		    Sample configuration files for web servers and cron are available
+		    in the conf/ directory.
+
+		    You need to modify the ownership of the following directories and
+		    their contents to be owned by the web server:
+		        * /var/www/reviews/htdocs/media/uploaded
+		        * /var/www/reviews/htdocs/media/ext
+		        * /var/www/reviews/htdocs/static/ext
+		        * /var/www/reviews/data
+
+		    For more information, visit:
+
+		    https://www.reviewboard.org/docs/manual/3.0/admin/installation/creating-sites/
+
+
+		* Get more out of Review Board
+
+		    To enable PDF document review, enhanced scalability, GitHub
+		    Enterprise support, and more, download Power Pack at:
+
+		    https://www.reviewboard.org/powerpack/
+
+		    Your install key for Power Pack is:
+		    8292924df2c887fd9bc38697aca318a789acad9d
+
+		    Support contracts for Review Board are also available:
+
+		    https://www.beanbaginc.com/support/contracts/
+
+8. 权限管理:
+	$ chown -R www-data /var/www/reviews.example.com/htdocs/media/uploaded
+	$ chown -R www-data /var/www/reviews.example.com/data
+
+9. 配置apache: 
+
+	There are two possible Apache configuration files that will be generated, depending on whether you selected mod_wsgi, mod_python or fastcgi during rb-site install.
+	If you selected mod_wsgi, your configuration file will be conf/apache-wsgi.conf.
+	If you selected mod_python, your configuration file will be conf/apache-modpython.conf.
+	If you selected fastcgi, your configuration file will be conf/apache-fastcgi.conf.
+	Depending on your operating system or Linux distribution, the configuration file can be installed in a couple different ways.
+	If you have a sites-available directory in your Apache configuration directory 
+	(for example, /etc/apache2/sites-available, then you should rename your configuration file to match your site (e.g., reviews.example.com.conf) and put it in that directory.
+	Then create a symbolic link from that file to the sites-enabled directory. This is the most common setup on Debian or Ubuntu-based distributions. So for example:
+
+	$ cd /etc/apache2/sites-available
+	$ cp /var/www/reviews.example.com/conf/apache-wsgi.conf reviews.example.com.conf
+	$ cd ../sites-enabled
+	$ ln -s ../sites-available/reviews.example.com.conf .
+	

@@ -1,0 +1,75 @@
+1. 安装rbt.
+   a. tar -xvf RBTools-1.0.1.tar.gz
+   b. 进入解压后的目录
+   c. python setup.py install
+
+2. 在相应项目下执行.
+    a. rbt setup-repo 然后填写服务器地址 http://IP:port
+	================================================================================================
+		$rbt setup-repo
+
+		Enter the Review Board server URL: http://192.168.1.253:8088
+		Use the Subversion repository "rb_test" (https://192.168.1.253/svn/rb_test/)? [Yes/No]: yes
+		Create "/var/www/253http/rb_test/project/trunk/.reviewboardrc" with the following?
+
+		REVIEWBOARD_URL = "http://192.168.1.253:8088"
+		REPOSITORY = "rb_test"
+		REPOSITORY_TYPE = "svn"
+
+		 [Yes/No]: Yes
+		 Config written to /var/www/253http/rb_test/project/trunk/.reviewboardrc
+
+3. 修改并提交diff.
+	a. rbt post
+	=============================================================================================
+		# rbt post
+		Review request #8 posted.         [注意: 此处reviewid为:8, 后面会用到]
+
+		http://192.168.1.253:8088/r/8/
+		http://192.168.1.253:8088/r/8/diff/
+
+		然后进入网页提交review请求
+
+	b. 比较省事的提交命令
+		rbt post -p --summary "svn protocol" --description "https:// borken" --target-people=xwh
+			--summary : 标题
+			--description : 内容
+			--targer: 审核人
+
+	c. 覆盖提交
+		rbt post -r 8 [覆盖reviewid为8的diff]
+
+4. 查看review 进度
+	a. rbt status
+		 +--------+----------------+
+		 | Status | Review Request |
+		 +========+================+
+		 | Draft  | r/8 -          |
+		 +--------+----------------+
+
+5. 更多细节
+	a.  rbt help
+
+6. pre-commit
+	svn ci -m "review:review"
+
+7. 提交前审核效果
+	a. 没有经过审核的情况提交
+		svn ci -m "review:10"
+		----------------------------
+		Sending        pre-hook-intro
+		Sending        rbt-intro
+		Transmitting file data ..svn: E165001: Commit failed (details follow):
+		svn: E165001: Commit blocked by pre-commit hook (exit code 1) with output:
+		not enough of ship_it.
+
+	b. 注意提交的注释内容代带有是 -m "review:reviewid "
+
+		 svn ci -m "1. hahaha"
+		 ------------------------------
+		 Sending        pre-hook-intro
+		 Sending        rbt-intro
+		 Transmitting file data ..svn: E165001: Commit failed (details follow):
+		 svn: E165001: Commit blocked by pre-commit hook (exit code 1) with output:
+		 No review id.
+

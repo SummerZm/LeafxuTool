@@ -1,0 +1,31 @@
+A. 配置https时，ssl证书要填满。【ReviewBoard的一个bug，不填满会导致在设置仓库时验证不通过】
+B. rbt setup-repo url。如果url是https://xxxx:xxx的形式并出现问题, 则尝试使用url http://xxxxxxx:xxx。
+	【因为https默认443端口会和xxx端口冲突，apache识别不了】
+	【http://xxxxxxx:xxx 访问xxx端口，由于apache后台配置了ssl,所以跳转至443端口验证】
+
+C. 使用rbt提示找不到仓库代码时，可能是rbt工具自身绝对/相对路径的bug, 导致仓库找不到.
+	 
+D. 其他工具的安装与卸载
+	python setup.py install.
+	python setup.py install --record > file.txt
+	cat file.txt | xargs rm -rf
+
+E. svn的部署
+	1. Once run 'svnserve -d -r /var/www/svnTest' on server, you need use 'svn co svn://ip' to checkout on you client.
+	2. If issue 'svnserve -d'  on server, you should use 'svn co svn://ip/svndirecotry' instead.
+	3. The svnserver config file is so strict that easy to go into error when you wirte it.
+	4. To show repositise commit log correct, uncomment "#anon-access=ready #auth-access=wirte" which in svnserve.conf modify "anon-access=ready" to "anon-access=none"  meantime 
+
+E. forget ssh key
+	1. ssh-keygen -f ~/.ssh -R 192.168.1.114
+
+F. 代码提交使用w问题
+	1. 不同用户对同一个文件，同一行的修改，会出现冲突, 后提交者需要进行合并.
+
+	2. 不同用户对同一个文件，不同一行的修改. 需要同步svn版本.
+
+	3. 提交时reviewId使用错. 即: A的review id为1， B的reviewId 位2, 若A用Id2提交.
+		-- 导致发生代码的未经审核提交错误.
+		-- 未经审核的reviewId泄漏.
+		-- 庆幸的是每个用户只能看到自己的review_id.
+
