@@ -1,0 +1,58 @@
+
+一、ssh-keygen的详解
+=======================================================================================
+模型分析：假设 A （192.168.20.59）为客户机器，B（192.168.20.60）为目标机；
+要达到的目的：A机器ssh登录B机器无需输入密码；加密方式选 rsa|dsa均可以，默认dsa
+
+	ssh-keygen -t rsa #使用rsa加密
+密钥类型可以用 -t 选项指定。如果没有指定则默认生成用于SSH-2的RSA密钥
+
+文件的作用说明，摘自http://lamp.linux.gov.cn/OpenSSH/ssh-keygen.html
+	
+  ~/.ssh/identity	该用户默认的 RSA1 身份认证私钥(SSH-1)。此文件的权限应当至少限制为"600"。
+  ~/.ssh/identity.pub  该用户默认的 RSA1 身份认证公钥(SSH-1)。此文件无需保密。
+
+  ~/.ssh/id_dsa  该用户默认的 DSA 身份认证私钥(SSH-2)。此文件的权限应当至少限制为"600"。
+  ~/.ssh/id_dsa.pub  该用户默认的 DSA 身份认证公钥(SSH-2)。此文件无需保密。
+
+  ~/.ssh/id_rsa  该用户默认的 RSA 身份认证私钥(SSH-2)。此文件的权限应当至少限制为"600"。
+  ~/.ssh/id_rsa.pub  该用户默认的 RSA 身份认证公钥(SSH-2)。此文件无需保密。
+
+  /etc/ssh/moduli 包含用于 DH-GEX 的 Diffie-Hellman groups
+  公钥文件的内容应该添加到所有 RSA 目标主机的 ~/.ssh/authorized_keys 文件中。
+
+二、具体操作流程
+==================================================================================================
+单向登陆的操作过程（能满足上边的目的）：
+1、登录A机器 
+2、ssh-keygen -t [rsa|dsa]，将会生成密钥文件和私钥文件 id_rsa,id_rsa.pub或id_dsa,id_dsa.pub
+3、将 .pub 文件复制到B机器的 .ssh 目录， 并 cat id_dsa.pub >> ~/.ssh/authorized_keys
+4、设置文件和目录权限（保证.ssh和authorized_keys都只有用户自己有写权限。否则可能验证无效。）：
+	$ chmod 600 authorized_keys 
+	$ chmod 700 -R .ssh
+	
+5、更新指定主机的knowhost记录
+    a. ssh-keygen -f know-host-path -R ip
+       eg: ssh-keygen -f /root/.ssh/known_hosts -R 192.168.1.114
+	   
+6、当ssh一台没登陆过的机器的时候,需要输入yes,确认一下添加know_hosts文件,在一些脚本处理的时候很不方便，
+    修改/etc/ssh/ssh_config文件StrictHostKeyChecking ask为 StrictHostKeyChecking no达到自动添加。
+ 
+三、总结注意事项
+========================================================================
+1、文件和目录的权限千万别设置成chmod 777.这个权限太大了，不安全，数字签名也不支持。我开始图省事就这么干了
+2、生成的rsa/dsa签名的公钥是给对方机器使用的。这个公钥内容还要拷贝到authorized_keys 
+3、linux之间的访问直接 ssh 机器ip
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+

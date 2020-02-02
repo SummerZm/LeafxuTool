@@ -1,0 +1,2545 @@
+ssh 配置文件讲解大全 ssh调试模式 sftp scp strace进行调试 特权分离
+http://blog.chinaunix.net/uid-16728139-id-3265394.html
+这篇文章没有包含/etc/ssh/sshd_config文件的所有选项和参数
+http://blog.csdn.net/u010073893/article/details/52953911
+
+
+远程连接一台服务器
+ssh -p 58422  steven@10.15.65.133
+####################################
+#日志级别调整为VERBOSE,默认为INFO
+#日志Facility为AUTH
+####################################
+LogLevel VERBOSE
+SyslogFacility AUTH
+ 
+# ssh -v 192.168.1.155
+OpenSSH_5.3p1, OpenSSL 1.0.1e-fips 11 Feb 2013   #第一阶段,双方确认协议版本号和ssh版本号
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug1: Connecting to 192.168.1.155 [192.168.1.155] port 22.
+debug1: Connection established.
+debug1: permanently_set_uid: 0/0
+debug1: identity file /root/.ssh/identity type -1
+debug1: identity file /root/.ssh/identity-cert type -1
+debug1: identity file /root/.ssh/id_rsa type -1
+debug1: identity file /root/.ssh/id_rsa-cert type -1
+debug1: identity file /root/.ssh/id_dsa type -1
+debug1: identity file /root/.ssh/id_dsa-cert type -1
+debug1: identity file /root/.ssh/id_ecdsa type -1
+debug1: identity file /root/.ssh/id_ecdsa-cert type -1
+debug1: Remote protocol version 2.0, remote software version OpenSSH_5.3
+debug1: match: OpenSSH_5.3 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_5.3
+debug1: SSH2_MSG_KEXINIT sent  #第二阶段,双方确认/支持使用的数据加密算法,消息摘要算法,主机公钥等信息.
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: server->client aes128-ctr hmac-md5 none
+debug1: kex: client->server aes128-ctr hmac-md5 none
+debug1: SSH2_MSG_KEX_DH_GEX_REQUEST(1024<1024<8192) sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_GROUP
+debug1: SSH2_MSG_KEX_DH_GEX_INIT sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_REPLY
+The authenticity of host '192.168.1.155 (192.168.1.155)' can't be established.
+RSA key fingerprint is d4:58:f1:dc:d7:d4:fd:e0:2a:c3:dd:fd:79:51:2e:91.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '192.168.1.155' (RSA) to the list of known hosts.
+debug1: ssh_rsa_verify: signature correct
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: SSH2_MSG_SERVICE_REQUEST sent
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password
+debug1: Next authentication method: gssapi-keyex
+debug1: No valid Key exchange context
+debug1: Next authentication method: gssapi-with-mic
+debug1: Unspecified GSS failure.  Minor code may provide more information
+Cannot determine realm for numeric host address
+debug1: Unspecified GSS failure.  Minor code may provide more information
+Cannot determine realm for numeric host address
+debug1: Unspecified GSS failure.  Minor code may provide more information
+debug1: Unspecified GSS failure.  Minor code may provide more information
+Cannot determine realm for numeric host address
+
+debug1: Next authentication method: publickey  //先尝试公钥
+debug1: Trying private key: /root/.ssh/identity
+debug1: Trying private key: /root/.ssh/id_rsa
+debug1: Trying private key: /root/.ssh/id_dsa
+debug1: Trying private key: /root/.ssh/id_ecdsa
+debug1: Next authentication method: password    #第三阶段,进入身份验证的过程
+#第四阶段,验证成功后等到一个新的session,及设置环境变量等,最后得到一个shell.
+
+ 
+一)客户端与服务端的通讯认证流程:
+第一阶段:
+双方协商SSH版本号和协议,协商过程数据不加密.
+SSH-<主协议版本号>.<次协议版本号>-<软件版本号>
+对映如下:
+SSH-2.0-OpenSSH_5.3(我们可以通过telnet localhost 22得到SSH的版本号)
+ 
+第二阶段:
+双方协商RSA/DSA主机密钥,数据加密算法,消息摘要.
+其中主机密钥用于确认服务端的身份,数据加密算法用于加密通信数据,消息摘要用于校验数据的完整性,登录认证方式.
+主要思想是服务端提供各种加密/认证方式,客户端在这中间选择加密/认证方式.
+ 
+ 
+第三阶段:
+由于双方已经确认了可以使用的加密算法,消息摘要,协议版本号,主机密钥等信息,
+这阶段由客户端根据选择的认证方式发起登录验证申请.
+服务端对客户端提供的密码等信息进行校验.如认证不通过,则试图进行下一种认证方式的申核,直到成功/失败,或者超时.
+ 
+ 
+第四阶段:
+客户端如果校验成功,则服务端会创建一个客户端的session(进程),同时会转送环境变量,最后给客户端一个bash的机会.
+ 
+ 
+我们在客户端用debug的方式进行登录,注意这里只用了debug1.
+
+ 
+二)SSH服务端的各配置项
+下面的试验环境为:
+ssh client:192.168.27.143
+ssh server:192.168.27.142
+ 
+ 
+1)GSSAPI身份验证.
+==================================================================================================================================
+GSSAPIAuthentication 是否允许使用基于 GSSAPI 的用户认证.默认值为"no".仅用于SSH-2.
+GSSAPICleanupCredentials 是否在用户退出登录后自动销毁用户凭证缓存。默认值是"yes".仅用于SSH-2.
+注:
+GSSAPI是公共安全事务应用程序接口(GSS-API)
+公共安全事务应用程序接口以一种统一的模式为使用者提供安全事务,由于它支持最基本的机制和技术,所以保证不同的应用环境下的可移植性.
+该规范定义了GSS-API事务和基本元素,并独立于基本的机制和程序设计语言环境,并借助于其它相关的文档规范实现.
+ 
+如果我们在服务端打开GSSAPIAuthentication配置项,如下:
+vi /etc/ssh/sshd_config
+ 
+# GSSAPI options
+GSSAPIAuthentication yes
+GSSAPICleanupCredentials yes
+在客户端登录服务端会用gssapi-keyex,gssapi-with-mic进行身份校验,同样客户端也要支持这种身份验证,如下:
+vi /etc/ssh/ssh_config
+GSSAPIAuthentication yes
+GSSAPIDelegateCredentials yes
+ 
+我们在客户端连接SSH服务端,如下:
+ssh -v 192.168.27.142
+OpenSSH_4.3p2 Debian-9, OpenSSL 0.9.8g 19 Oct 2007
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug1: Connecting to 192.168.27.142 [192.168.27.142] port 22.
+debug1: Connection established.
+debug1: identity file /home/chenkuo/.ssh/identity type -1
+debug1: identity file /home/chenkuo/.ssh/id_rsa type -1
+debug1: identity file /home/chenkuo/.ssh/id_dsa type -1
+debug1: Remote protocol version 2.0, remote software version OpenSSH_4.3p2 Debian-9
+debug1: match: OpenSSH_4.3p2 Debian-9 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_4.3p2 Debian-9
+debug1: Unspecified GSS failure.  Minor code may provide more information
+No credentials cache found
+ 
+debug1: Unspecified GSS failure.  Minor code may provide more information
+No credentials cache found
+ 
+debug1: Unspecified GSS failure.  Minor code may provide more information
+No credentials cache found
+ 
+debug1: Unspecified GSS failure.  Minor code may provide more information
+Unknown code H 1
+ 
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: server->client aes128-cbc hmac-md5 none
+debug1: kex: client->server aes128-cbc hmac-md5 none
+debug1: SSH2_MSG_KEX_DH_GEX_REQUEST(1024<1024<8192) sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_GROUP
+debug1: SSH2_MSG_KEX_DH_GEX_INIT sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_REPLY
+debug1: Host '192.168.27.142' is known and matches the RSA host key.
+debug1: Found key in /home/chenkuo/.ssh/known_hosts:1
+debug1: ssh_rsa_verify: signature correct
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: SSH2_MSG_SERVICE_REQUEST sent
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password
+debug1: Next authentication method: gssapi-keyex
+debug1: No valid Key exchange context
+debug1: Next authentication method: gssapi-with-mic
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password
+ 
+我们看到如下的信息:
+debug1: Unspecified GSS failure.  Minor code may provide more information
+No credentials cache found
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password
+debug1: Next authentication method: gssapi-keyex
+debug1: No valid Key exchange context
+说明SSH登录时采用GSSAPI的方式进行身份验证,但我们的系统不支持.
+ 
+最后如果我们不用这种方式进行身份验证的话,建议关闭这个选项,这样可以提高验证时的速度.
+ 
+ 
+ 
+ 
+2)RSA/DSA密钥认证
+========================================================================================================================
+我们除了可以用UNIX密码(unix passwd/shadow)方式登录系统外,还可以选择RSA/DSA密钥认证方式登录系统.
+ 
+注:
+RSA:由RSA公司发明,是一个支持变长密钥的公共密钥算法,需要加密的文件块的长度也是可变的;
+DSA(Digital Signature Algorithm):数字签名算法,是一种标准的 DSS(数字签名标准);
+同时这两种加密算法都是非对称加密算法.
+ 
+2.1)RSA密钥认证试验
+首先用ssh-keygen生成一对RSA(公/私钥),用ssh-copy-id工具将公钥COPY到SSH服务端.最后登录SSH服务端进行测试:
+ 
+用rsa的认证方式生成公/私钥,如下:
+ ssh-keygen -t rsa  
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/chenkuo/.ssh/id_rsa): 
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/chenkuo/.ssh/id_rsa.
+Your public key has been saved in /home/chenkuo/.ssh/id_rsa.pub.
+The key fingerprint is:
+c3:8c:17:ad:95:cb:95:82:8b:eb:f1:a4:28:52:0e:f2 chenkuo@test2
+ 
+ 
+用ssh-copy-id将id_rsa.pub(公钥)COPY到SSH服务端,如下:
+ssh-copy-id -i .ssh/id_rsa.pub chenkuo@192.168.27.142 
+
+chenkuo@192.168.27.142's password: 
+Now try logging into the machine, with "ssh 'chenkuo@192.168.27.142'", and check in:
+ 
+  .ssh/authorized_keys
+ 
+to make sure we haven't added extra keys that you weren't expecting.
+ 
+ 
+再次登录,我们发现,系统要求输入id_rsa密码,如下:
+ssh chenkuo@192.168.27.142 
+Enter passphrase for key '/home/chenkuo/.ssh/id_rsa': 
+Linux test2 2.6.18-4-k7 #1 SMP Mon Mar 26 17:57:15 UTC 2007 i686
+ 
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+ 
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+You have new mail.
+Last login: Sat May 28 19:19:32 2011 from 192.168.27.134
+ 
+注:
+事实上我们用ssh-keygen生成一只公钥和私钥,将公钥转到远程待登录的服务器,
+要用RSA登录的时候,我们只要在本地的控制台键入 ssh chenkuo@remotehost,就象我们常做的一样.
+可这一次,ssh 告诉 remotehost 的 sshd 它想使用 RSA 认证协议,
+接下来发生的事情非常有趣.Remotehost 的 sshd 会生成一个随机数,并用我们先前拷贝过去的公钥对这个随机数进行加密.
+然 后,sshd 把加密了的随机数发回给正在 clienthost 的 ssh客户端程序.
+接下来,轮到我们的 ssh 用密钥对这个随机数进行解密后,再把它发回给 remotehost,
+实际上等于在说:瞧,我确实有匹配的专用密钥,我能成功的对您的消息进行解密!"
+最后,sshd 得出结论,既然我们持有匹配的专用密钥,就应当允许我们登录.
+因此,我们有匹配的专用密钥这一事实授权我们访问 remotehost.
+ 
+服务端通过下面两个选项来控制是否采用公/密钥的方式进行身份验证
+PubkeyAuthentication yes
+#AuthorizedKeysFile     %h/.ssh/authorized_keys
+改成PubkeyAuthentication no则关闭公/私钥认证
+48 #PubkeyAuthentication yes
+49 #AuthorizedKeysFile     .ssh/authorized_keys
+ 
+
+ 
+ 
+2.2)我们用类似的方法生成dsa公/私钥.
+ ssh-keygen -t dsa  
+Generating public/private dsa key pair.
+Enter file in which to save the key (/home/chenkuo/.ssh/id_dsa): 
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/chenkuo/.ssh/id_dsa.
+Your public key has been saved in /home/chenkuo/.ssh/id_dsa.pub.
+The key fingerprint is:
+79:ea:d5:a8:49:7b:81:6c:17:d1:a4:43:f1:ac:29:29 chenkuo@test2
+ 
+同样将id_dsa.pub(公钥)COPY到远程服务器,如上:
+ ssh-copy-id -i .ssh/id_dsa.pub chenkuo@192.168.27.142 
+15
+chenkuo@192.168.27.142's password: 
+Now try logging into the machine, with "ssh 'chenkuo@192.168.27.142'", and check in:
+ 
+  .ssh/authorized_keys
+ 
+to make sure we haven't added extra keys that you weren't expecting.
+ 
+我们再次登录,这里我们用ssh -v的方式打印更详细的信息,如下:
+ 
+ ssh -v chenkuo@192.168.27.142 
+OpenSSH_4.3p2 Debian-9, OpenSSL 0.9.8g 19 Oct 2007
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug1: Connecting to 192.168.27.142 [192.168.27.142] port 22.
+debug1: Connection established.
+debug1: identity file /home/chenkuo/.ssh/identity type -1
+debug1: identity file /home/chenkuo/.ssh/id_rsa type -1
+debug1: identity file /home/chenkuo/.ssh/id_dsa type 2
+debug1: Remote protocol version 2.0, remote software version OpenSSH_4.3p2 Debian-9
+debug1: match: OpenSSH_4.3p2 Debian-9 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_4.3p2 Debian-9
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: server->client aes128-cbc hmac-md5 none
+debug1: kex: client->server aes128-cbc hmac-md5 none
+debug1: SSH2_MSG_KEX_DH_GEX_REQUEST(1024<1024<8192) sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_GROUP
+debug1: SSH2_MSG_KEX_DH_GEX_INIT sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_REPLY
+debug1: Host '192.168.27.142' is known and matches the RSA host key.
+debug1: Found key in /home/chenkuo/.ssh/known_hosts:1
+debug1: ssh_rsa_verify: signature correct
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: SSH2_MSG_SERVICE_REQUEST sent
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: publickey,password
+debug1: Next authentication method: publickey
+debug1: Trying private key: /home/chenkuo/.ssh/identity
+debug1: Trying private key: /home/chenkuo/.ssh/id_rsa
+debug1: Offering public key: /home/chenkuo/.ssh/id_dsa
+debug1: Server accepts key: pkalg ssh-dss blen 434
+debug1: PEM_read_PrivateKey failed
+debug1: read PEM private key done: type
+Enter passphrase for key '/home/chenkuo/.ssh/id_dsa': 
+debug1: read PEM private key done: type DSA
+debug1: Authentication succeeded (publickey).
+debug1: channel 0: new [client-session]
+debug1: Entering interactive session.
+debug1: Sending environment.
+debug1: Sending env LANG = en_US.UTF-8
+Linux test2 2.6.18-4-k7 #1 SMP Mon Mar 26 17:57:15 UTC 2007 i686
+ 
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+ 
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+You have new mail.
+Last login: Sun May 29 05:21:04 2011 from 192.168.27.134
+注:
+如果要关闭用DSA公密钥认证的方式,也要将PubkeyAuthentication改成no.
+而DSA应用于ssh v2,而RSA在ssh v1上也得到支持.
+ 
+另外我们可以在ssh配置文件中定义用于公/私钥认证的公钥文件物理位置,默认是:
+AuthorizedKeysFile      .ssh/authorized_keys
+如果采用RSA/DSA这种公/私钥认证方式,我们建议这个采用默认配置,而不去更改它,因为ssh-copy-id等命令传输到被登录服务器的公钥文件就是~/.ssh/authorized_keys,例如:
+ ssh-copy-id -i /root/.ssh/id_rsa.pub test@192.168.27.142 
+test@192.168.27.142's password: 
+Now try logging into the machine, with "ssh 'test@192.168.27.142'", and check in:
+ 
+  .ssh/authorized_keys
+ 
+to make sure we haven't added extra keys that you weren't expecting.
+ 
+ 
+ 
+3)关于密钥认证免密码的登入
+=================================================================================================================
+在RSA/DSA生成密钥对的时候,不输入口令,直接回车,以这样的密钥对进行登录,将不会提示用户输入密码.
+ 
+我们先生成RSA密钥对,对下:
+ssh-keygen -t rsa
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/chenkuo/.ssh/id_rsa): 
+/home/chenkuo/.ssh/id_rsa already exists.
+Overwrite (y/n)? y
+Enter passphrase (empty for no passphrase):              注意这里不要输入密码,直接回车通过 
+Enter same passphrase again:                             同样输入回车
+Your identification has been saved in /home/chenkuo/.ssh/id_rsa.
+Your public key has been saved in /home/chenkuo/.ssh/id_rsa.pub.
+The key fingerprint is:
+27:f4:4d:61:5b:02:3f:d3:fc:a3:5b:d4:9b:08:81:64 chenkuo@test2
+ 
+将id_rsa.pub传输到ssh服务端,如下:
+chenkuo@test2:~$ ssh-copy-id -i /home/chenkuo/.ssh/id_rsa.pub chenkuo@192.168.27.142
+29
+chenkuo@192.168.27.142's password: 
+Now try logging into the machine, with "ssh 'chenkuo@192.168.27.142'", and check in:
+ 
+  .ssh/authorized_keys
+ 
+to make sure we haven't added extra keys that you weren't expecting.
+ 
+再次登录ssh服务端,这里不用输入密码,如下:
+ssh chenkuo@192.168.27.142
+Linux test2 2.6.18-4-k7 #1 SMP Mon Mar 26 17:57:15 UTC 2007 i686
+ 
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+ 
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+You have new mail.
+Last login: Mon May 30 18:48:38 2011 from 192.168.27.134
+chenkuo@test2:~$
+ 
+ 
+ 
+4)拒绝用UNIX/password的方式登录系统
+===========================================================================================================
+UNIX/password是传统的认证方式,我们可以通过ssh配置参数拒绝以这种方式登录服务器.
+控制UNIX/password的登录方式的配置选项是:
+PasswordAuthentication yes
+复制代码
+默认是UNIX/password登录方式是开启的,如果关闭UNIX/password登录方式将yes改成no即可,如下:
+vi /etc/ssh/sshd_config
+PasswordAuthentication no
+ 
+存盘退出
+重启ssh服务:
+/etc/init.d/ssh restart
+复制代码
+ 
+
+ 
+     64 #PasswordAuthentication yes
+     65 #PermitEmptyPasswords no
+     66 PasswordAuthentication yes
+
+ 
+在客户端再次登录,发现没有password登录方式,如下:
+ssh -v chenkuo@192.168.27.142
+OpenSSH_4.3p2 Debian-9, OpenSSL 0.9.8g 19 Oct 2007
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug1: Connecting to 192.168.27.142 [192.168.27.142] port 22.
+debug1: Connection established.
+debug1: identity file /home/chenkuo/.ssh/identity type -1
+debug1: identity file /home/chenkuo/.ssh/id_rsa type 1
+debug1: identity file /home/chenkuo/.ssh/id_dsa type 2
+debug1: Remote protocol version 2.0, remote software version OpenSSH_4.3p2 Debian-9
+debug1: match: OpenSSH_4.3p2 Debian-9 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_4.3p2 Debian-9
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: server->client aes128-cbc hmac-md5 none
+debug1: kex: client->server aes128-cbc hmac-md5 none
+debug1: SSH2_MSG_KEX_DH_GEX_REQUEST(1024<1024<8192) sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_GROUP
+debug1: SSH2_MSG_KEX_DH_GEX_INIT sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_REPLY
+debug1: Host '192.168.27.142' is known and matches the RSA host key.
+debug1: Found key in /home/chenkuo/.ssh/known_hosts:1
+debug1: ssh_rsa_verify: signature correct
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: SSH2_MSG_SERVICE_REQUEST sent
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: publickey        注意:这里没有password的登录方式了.
+debug1: Next authentication method: publickey
+debug1: Trying private key: /home/chenkuo/.ssh/identity
+debug1: Offering public key: /home/chenkuo/.ssh/id_rsa
+debug1: Authentications that can continue: publickey
+debug1: Offering public key: /home/chenkuo/.ssh/id_dsa
+debug1: Authentications that can continue: publickey
+debug1: No more authentication methods to try.
+Permission denied (publickey).
+ 
+ 
+ 
+5)X11转发 【SSH 客户端上显示应用程序的图形部分】
+===============================================================================================
+X11转发允许在 SSH 客户端上显示应用程序的图形部分,而程序逻辑依然在远程服务器上执行.
+通过使用这种方法,用户可以避免通过连接转发整个桌面带来的网络开销,并且仅接收到有关显示部分的内容.
+我们需要SSH客户端有X服务器和SSH客户端(如 Cygwin-X,XmanagerEnterprise或者是一个Xwindows),
+而SSH服务端要安装ssh服务端以及任何要执行的x程序,如xclock或gnome-terminal等等.
+ 
+我们ssh客户端执行:
+ssh -X root@192.168.27.142 gnome-terminal
+此时客户端上会弹出一个gnome-terminal,在gnome-terminal执行命令其实就是在192.168.27.142(服务端)上执行.
+ 
+注意:
+服务端不一定要进入到x-windows里面,但它一定要有x客户端程序.
+ 
+而要完成上面的功能,我们就要保证X11Forwarding选项是yes,如下:
+X11Forwarding yes
+ 
+如果是X11Forwarding选项是no,转发X11程序则不会成功.
+ 
+如果不需要这个功能,建议关闭该选项
+ 
+ 
+ 
+6)SSH的日志级别
+=====================================================================================================
+SSH有如下9个日志级别:
+QUIET, FATAL, ERROR, INFO, VERBOSE, DEBUG, DEBUG1, DEBUG2, and DEBUG3.
+默认是INFO,DEBUG和DEBUG1是等价的,DEBUG级别一般用于调试.
+ 
+我们将日志级别更改为VERBOSE,再用ssh客户端连接服务端,查看服务端的ssh日志,看下INFO和VERBOSE的区别:
+ 
+服务端:
+vi /etc/ssh/sshd_config
+LogLevel VERBOSE
+/etc/init.d/ssh restart
+ 
+
+ 
+客户端:
+ssh 192.168.27.143
+The authenticity of host '192.168.27.143 (192.168.27.143)' can't be established.
+RSA key fingerprint is 49:35:e5:fe:1e:f4:cd:e2:50:d6:2e:57:35:cb:45:42.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '192.168.27.143' (RSA) to the list of known hosts.
+root@192.168.27.143's password: 
+Last login: Fri Jun  3 06:49:50 2011 from 192.168.27.1
+ 
+查看服务端的日志:
+tail -f /var/log/secure
+Jun  3 07:57:58 localhost sshd[2242]: Connection from 192.168.27.143 port 52632
+Jun  3 07:58:00 localhost sshd[2242]: Accepted password for root from 192.168.27.143 port 52632 ssh2
+Jun  3 07:58:00 localhost sshd[2242]: pam_unix(sshd:session): session opened for user root by (uid=0)
+ 
+ 
+将日志级别更改为INFO,将不会看到:Connection from 192.168.27.143 port 52632
+如下:
+Jun  3 07:57:03 localhost sshd[1787]: pam_unix(sshd:session): session closed for user root
+Jun  3 07:57:07 localhost sshd[2202]: pam_unix(sshd:session): session opened for user root by (uid=0)
+ 
+ 
+这里我们建议将日志级别调整为VERBOSE,这样可以检测对SSH服务的探测.
+ 
+ 
+ 
+7)客户端与服务端的环境变量传递
+=======================================================================================================
+AcceptEnv指定客户端发送的哪些环境变量将会被传递到会话环境中,但只有SSH-2协议支持环境变量的传递.
+我们可以使用*和?做为通配符,例如:
+AcceptEnv LC*
+这样就可以接受所有以LC开头的环境变量
+默认是不传递任何环境变量.
+ 
+若要支持环境变量传递,我们要在客户端和服务端都要做相关的配置,例如我们要传递环境变量CMD,如下:
+客户端:
+1)定义环境变量CMD
+declare -x CMD="hostname"
+ 
+2)在ssh客户端配置文件中增加发送环境变量的配置项,如下:
+vi /etc/ssh/ssh_config
+        SendEnv CMD
+存盘退出
+ 
+服务端:
+1)在ssh服务端配置文件sshd_config中增加接收环境变量的配置,如下:
+vi /etc/ssh/sshd_config
+AcceptEnv CMD
+存盘退出
+ 
+2)重启ssh服务,如下:
+/etc/init.d/ssh restart
+ 
+测试:
+ssh -v 192.168.27.142
+OpenSSH_5.3p1, OpenSSL 1.0.0-fips 29 Mar 2010
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug1: Connecting to 192.168.27.142 [192.168.27.142] port 22.
+debug1: Connection established.
+debug1: permanently_set_uid: 0/0
+debug1: identity file /root/.ssh/identity type -1
+debug1: identity file /root/.ssh/id_rsa type -1
+debug1: identity file /root/.ssh/id_dsa type -1
+debug1: Remote protocol version 2.0, remote software version OpenSSH_5.3
+debug1: match: OpenSSH_5.3 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_5.3
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: server->client aes128-ctr hmac-md5 none
+debug1: kex: client->server aes128-ctr hmac-md5 none
+debug1: SSH2_MSG_KEX_DH_GEX_REQUEST(1024<1024<8192) sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_GROUP
+debug1: SSH2_MSG_KEX_DH_GEX_INIT sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_REPLY
+debug1: Host '192.168.27.142' is known and matches the RSA host key.
+debug1: Found key in /root/.ssh/known_hosts:1
+debug1: ssh_rsa_verify: signature correct
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: SSH2_MSG_SERVICE_REQUEST sent
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password
+debug1: Next authentication method: gssapi-with-mic
+debug1: An invalid name was supplied
+Cannot determine realm for numeric host address
+ 
+debug1: An invalid name was supplied
+Cannot determine realm for numeric host address
+ 
+debug1: An invalid name was supplied
+ 
+ 
+debug1: Next authentication method: publickey
+debug1: Trying private key: /root/.ssh/identity
+debug1: Trying private key: /root/.ssh/id_rsa
+debug1: Trying private key: /root/.ssh/id_dsa
+debug1: Next authentication method: password
+root@192.168.27.142's password: 
+debug1: Authentication succeeded (password).
+debug1: channel 0: new [client-session]
+debug1: Requesting no-more-sessions@openssh.com
+debug1: Entering interactive session.
+debug1: Sending environment.
+debug1: Sending env CMD = hostname          /*注意这里ssh客户端发送环境变量CMD给ssh服务端*/
+debug1: Sending env LANG = en_US.UTF-8
+Last login: Fri Jun  3 22:32:56 2011 from 192.168.27.143
+ 
+我们登录到192.168.27.142(ssh服务端),查看环境变量是否传递成功,如下:
+echo $CMD
+hostname
+$CMD
+ssh-server
+ 
+我们看到环境变量CMD已经传递成功.
+但最后我们要补充说明的是,并不是所有的环境变量都会如我们所希望的那样传递,比如PATH,原因是在ssh登录的时候,系统也会做一些环境变量的设置,这时PATH会被改变,而不会是我们发送接受的变量.
+ 
+ 
+8)AllowUsers/AllowGroups与DenyUsers/DenyGroups
+==========================================================================================================================================
+AllowUsers允许指定的用户可以通过ssh服务登录该服务器,如果使用了AllowUsers,则只有AllowUsers的用户可以登录服务器,其它用户不能登录服务器.
+注意:
+1)如果我们使用PermitRootLogin no(阻止Root用户登录),那样AllowUsers root是不会生效的.
+2)如果我们使用DenyUsers阻止某用户登录,而AllowUsers开放某用户登录,则以DenyUsers为准.
+3)如果我们使用DenyGroups阻止某用户组登录,而AllowUsers开放某用户登录,也以DenyGroups为准.
+4)如果增加多个用户,各用户名之间用空格分隔,例如:AllowUsers root test test1
+最后我们对AllowUsers进行测试:
+ 
+ssh服务端:
+vi /etc/ssh/sshd_config
+AllowUsers test 
+存盘退出,并重启sshd服务
+/etc/init.d/sshd restart
+ 
+ssh客户端:
+此时我们使用用户test1登录系统,发现无法登录,如下:
+ssh  test1@192.168.27.142   
+test1@192.168.27.142's password: 
+Permission denied, please try again.
+ 
+转为使用test用户,登录成功,说明AllowUsers是起作用的,如下:
+ssh  test@192.168.27.142  
+test@192.168.27.142's password: 
+Last login: Sat Jun  4 18:50:52 2011 from 192.168.27.143
+ 
+AllowGroups/DenyUsers/DenyGroups的用法都比较简单,我们在此不一一举例.
+ 
+ 
+9)端口转发
+AllowTcpForwarding
+============================================================================================================================
+SSH有两种端口转发方式,分别是本地转发和远端转发.
+ 
+本地转发:
+ssh本地转发可以将连接本地端口的SOCKET数据转发到远程SSH服务端.
+----------------------------------------------------------------
+这是使用本地转发的例子:
+一台SSH服务端提供ftp服务,因为ftp传输是明文密码,如果不做ssh端口之前,我们可以通过tcpdump命令很容易的捕捉到明文信息.
+所以我们要对21端口进行转发：
+SSH客户端:
+ssh -CNf -L 2001:localhost:21 root@192.168.27.142
+root@192.168.27.142's password: 
+bind: Address already in use
+注:
+-C 压缩数据传输.
+-N 不执行脚本或命令.通常与-f连用.
+-f 后台认证用户/密码,通常和-N连用,不用登录到远程主机.
+我们在客户端可以看到相应的端口如下:
+netstat -tnp  
+Active Internet connections (w/o servers)
+Proto Recv-Q Send-Q Local Address               Foreign Address             State       PID/Program name   
+tcp        0     52 192.168.27.143:22           192.168.27.1:2275           ESTABLISHED 1520/0              
+tcp        0      0 192.168.27.143:36373        192.168.27.142:22           ESTABLISHED 1547/ssh            
+注:
+其中192.168.27.143:36373        192.168.27.142:22这一条就是SSH映射所产生的.
+同时我们可以看到ssh映射的进程,如下:
+ps -ef|grep ssh
+avahi     1111     1  0 11:37 ?        00:00:00 avahi-daemon: running [ssh-client.local]
+root      1280     1  0 11:37 ?        00:00:00 /usr/sbin/sshd
+root      1520  1280  0 11:43 ?        00:00:00 sshd: root@pts/0 
+root      1547     1  0 11:45 ?        00:00:00 ssh -CNf -L 2001:localhost:21 root@192.168.27.142
+root      1554  1523  0 11:47 pts/0    00:00:00 grep ssh
+ 
+SSH服务端:
+netstat -tnp  
+Active Internet connections (w/o servers)
+Proto Recv-Q Send-Q Local Address               Foreign Address             State       PID/Program name   
+tcp        0      0 192.168.27.142:22           192.168.27.1:2990           ESTABLISHED 1708/0              
+tcp        0      0 192.168.27.142:22           192.168.27.143:51581        ESTABLISHED 1767/sshd: root 
+注:我们看到192.168.27.142:22           192.168.27.143:51581这一条就是SSH本地映射产生的.
+ 
+此时我们在客户端连接localhost的2001端口,ssh即将数据转发到192.168.27.142(ssh服务端)的21端口,如下:
+[root@ssh-client ~]#ftp 
+ftp> open localhost 2001
+Connected to localhost (127.0.0.1).
+220 (vsFTPd 2.2.2)
+Name (localhost:root): test
+331 Please specify the password.
+Password:
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> 
+ 
+我们在服务端看到了监听到的数据,如下:
+tcpdump -X -n -i eth1 'host 192.168.27.143'
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth1, link-type EN10MB (Ethernet), capture size 65535 bytes
+20:35:56.392261 IP 192.168.27.1.mgcp-callagent > 192.168.27.143.ssh: Flags [P.], seq 1685371148:1685371200, ack 2463559151, win 15280, length 52
+下面都是通过SSH加密后的数据,结果略.
+ 
+而如果我们没有使用SSH映射的方式进行FTP连接,则会产生明文数据(PASS.123456).
+20:30:16.091389 IP 192.168.27.143.43867 > 192.168.27.142.ftp: Flags [P.], seq 11:24, ack 35, win 183, options [nop,nop,TS val 3656782 ecr 9909216], length 13
+        0x0000:  4510 0041 a4de 4000 4006 dd5a c0a8 1b8f  E..A..@.@..Z....
+        0x0010:  c0a8 1b8e ab5b 0015 40ff 06e5 551a 542c  .....[..@...U.T,
+        0x0020:  8018 00b7 0a07 0000 0101 080a 0037 cc4e  .............7.N
+        0x0030:  0097 33e0 5041 5353 2068 6974 6c65 720d  ..3.PASS.123456.
+        0x0040:  0a                                       .
+ 
+ 
+远程转发:
+将远程主机(服务器)的某个端口转发到本地端指定机器的指定端口.
+-----------------------------------------------------------------
+下面是一个远程转发的应用:
+ 
+在SSH服务端执行下面远程转发的命令,其中192.168.27.143为ssh客户端,如下:
+ssh -CNf -R 2001:localhost:21 root@192.168.27.143
+ 
+此时由于ssh远程转发我们会有下面的端口,如下:
+netstat -tnp  
+Active Internet connections (w/o servers)
+Proto Recv-Q Send-Q Local Address               Foreign Address             State       PID/Program name   
+tcp        0      0 192.168.27.142:48413        192.168.27.143:22           ESTABLISHED 1875/ssh            
+tcp        0     52 192.168.27.142:22           192.168.27.1:2279           ESTABLISHED 1714/0              
+ 
+我们在客户端上看下如下的端口:
+netstat -tulnp|grep 2001
+tcp        0      0 127.0.0.1:2001              0.0.0.0:*                   LISTEN      1651/sshd: root     
+tcp        0      0 ::1:2001                    :::*                        LISTEN      1651/sshd: root     
+ 
+此时我们可以在客户端上连接本地地址及端口,如下:
+[root@ssh-client ~]# ftp         
+ftp> open localhost 2001
+Connected to localhost (127.0.0.1).
+220 (vsFTPd 2.2.2)
+Name (localhost:root): test
+331 Please specify the password.
+Password:
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> 
+注:
+我们可以选择远程端口转发的方式来绕过防火墙.
+------------------------------------------------
+最后我们言归正转,来看一下AllowTcpForwarding选项.
+ 
+如果采用本地转发方式,例如在客户端执行:ssh -CNf -L 2001:localhost:21 root@192.168.27.142,此时服务端(192.168.27.142)如果AllowTcpForwarding选项是no,则不允许转发.
+如果采用远程转发方式,例如在服务端执行:ssh -CNf -R 2001:localhost:21 root@192.168.27.143,此时客户端(192.168.27.143)如果AllowTcpForwarding选项是no,则不允许转发.
+ 
+ 
+10)远程主机连接本地转发端口
+---------------------------------------------------------------------------------
+GatewayPorts是否允许远程主机连接本地的转发端口.默认值是"no".
+sshd 默认将远程端口转发绑定到loopback地址.这样将阻止其它远程主机连接到转发端口。
+GatewayPorts 指令可以让 sshd 将远程端口转发绑定到非loopback地址，这样就可以允许远程主机连接了。
+"no"表示仅允许本地连接，"yes"表示强制将远程端口转发绑定到通配地址(wildcard address)，
+ 
+这个配置项是要修改本地转发机的ssh配置,如下:
+vi /etc/ssh/ssh_config
+GatewayPorts yes
+ 
+ssh -v -CNf -L 2001:192.168.27.142:22 root@192.168.27.143 /*注意:192.168.27.143为当前客户端的IP,而192.168.27.142是远程SSH服务端*/
+OpenSSH_5.3p1, OpenSSL 1.0.0-fips 29 Mar 2010
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug1: Connecting to 192.168.27.143 [192.168.27.143] port 22.
+debug1: Connection established.
+debug1: permanently_set_uid: 0/0
+debug1: identity file /root/.ssh/identity type -1
+debug1: identity file /root/.ssh/id_rsa type 1
+debug1: identity file /root/.ssh/id_dsa type 2
+debug1: Remote protocol version 2.0, remote software version OpenSSH_5.3
+debug1: match: OpenSSH_5.3 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_5.3
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: server->client aes128-ctr hmac-md5 zlib@openssh.com
+debug1: kex: client->server aes128-ctr hmac-md5 zlib@openssh.com
+debug1: SSH2_MSG_KEX_DH_GEX_REQUEST(1024<1024<8192) sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_GROUP
+debug1: SSH2_MSG_KEX_DH_GEX_INIT sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_REPLY
+debug1: Host '192.168.27.143' is known and matches the RSA host key.
+debug1: Found key in /root/.ssh/known_hosts:2
+debug1: ssh_rsa_verify: signature correct
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: SSH2_MSG_SERVICE_REQUEST sent
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password,hostbased
+debug1: Next authentication method: publickey
+debug1: Trying private key: /root/.ssh/identity
+debug1: Offering public key: /root/.ssh/id_rsa
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password,hostbased
+debug1: Offering public key: /root/.ssh/id_dsa
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password,hostbased
+debug1: Next authentication method: password
+root@192.168.27.143's password: 
+debug1: Enabling compression at level 6.
+debug1: Authentication succeeded (password).
+debug1: Local connections to *:2001 forwarded to remote address 192.168.27.142:22
+debug1: Local forwarding listening on 0.0.0.0 port 2001.
+debug1: channel 0: new [port listener]
+debug1: Local forwarding listening on :: port 2001.
+bind: Address already in use
+debug1: Requesting no-more-sessions@openssh.com
+debug1: Entering interactive session.
+ 
+此时连接本地的eth1网卡地址:
+ssh -p 2001 192.168.27.143
+debug1: Connection to port 2001 forwarding to 192.168.27.142 port 22 requested.
+debug1: channel 1: new [direct-tcpip]
+root@192.168.27.143's password: 
+Last login: Sat Jun 18 13:23:04 2011 from localhost.localdomain
+ 
+ 
+ 
+        Welcome to
+         _  _
+        | ||_|                 
+        | | _ ____  _   _  _  _ 
+        | || |  _ \| | | |\ \/ /
+        | || | | | | |_| |/    \
+        |_||_|_| |_|\____|\_/\_/
+ 
+        Linux support by<newhitler@163.com>
+        My homepage:
+        http://ckhitler.lupaworld.com
+ 
+ 
+ 
+ 睇到呢度
+ 
+[root@ssh-server ~]# exit
+logout
+Connection to 192.168.27.143 closed.
+[root@ssh-client ~]# debug1: channel 1: free: direct-tcpip: listening port 2001 for 192.168.27.142 port 22, connect from 192.168.27.143 port 43295, nchannels 2
+注:
+我们通过打开GatewayPorts选项,使用我们即可以用回环地址转发,也可以用其它IP地址转发,这样就使我们可以通过ssh将该服务器做成一个转发机.
+ 
+我们关闭GatewayPorts选项后,只能使用本地连接,如下:
+vi /etc/ssh/ssh_config
+GatewayPorts no
+ 
+ssh -v -CNf -L 2001:192.168.27.142:22 root@192.168.27.143
+OpenSSH_5.3p1, OpenSSL 1.0.0-fips 29 Mar 2010
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug1: Connecting to 192.168.27.143 [192.168.27.143] port 22.
+debug1: Connection established.
+debug1: permanently_set_uid: 0/0
+debug1: identity file /root/.ssh/identity type -1
+debug1: identity file /root/.ssh/id_rsa type 1
+debug1: identity file /root/.ssh/id_dsa type 2
+debug1: Remote protocol version 2.0, remote software version OpenSSH_5.3
+debug1: match: OpenSSH_5.3 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_5.3
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: server->client aes128-ctr hmac-md5 zlib@openssh.com
+debug1: kex: client->server aes128-ctr hmac-md5 zlib@openssh.com
+debug1: SSH2_MSG_KEX_DH_GEX_REQUEST(1024<1024<8192) sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_GROUP
+debug1: SSH2_MSG_KEX_DH_GEX_INIT sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_REPLY
+debug1: Host '192.168.27.143' is known and matches the RSA host key.
+debug1: Found key in /root/.ssh/known_hosts:2
+debug1: ssh_rsa_verify: signature correct
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: SSH2_MSG_SERVICE_REQUEST sent
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password,hostbased
+debug1: Next authentication method: publickey
+debug1: Trying private key: /root/.ssh/identity
+debug1: Offering public key: /root/.ssh/id_rsa
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password,hostbased
+debug1: Offering public key: /root/.ssh/id_dsa
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password,hostbased
+debug1: Next authentication method: password
+root@192.168.27.143's password: 
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password,hostbased 
+debug1: Enabling compression at level 6.
+debug1: Authentication succeeded (password).
+debug1: Local connections to LOCALHOST:2001 forwarded to remote address 192.168.27.142:22 /*我们看到这里只做了将本地localhost:2001转发到192.168.27.142:22*/
+debug1: Local forwarding listening on ::1 port 2001.
+debug1: channel 0: new [port listener]
+debug1: Local forwarding listening on 127.0.0.1 port 2001.
+debug1: channel 1: new [port listener]
+debug1: Requesting no-more-sessions@openssh.com
+[root@ssh-client ~]# debug1: Entering interactive session.
+ 
+ 
+ 
+ 
+11)登录时显示的信息
+-----------------------------------------------------------------------------------------------------------------
+有如下的选项可以控制登录ssh时显示的信息
+ 
+ 
+11.1)Banner
+Banner用于在登录之前显示在用户屏幕上,如果定义为none,则不显示任何信息,我们可以指定Banner为相应的文件,如下:
+Banner /etc/issue
+ 
+cat /etc/issue
+ 
+        #############################################################################
+        #       Warning: Unauthorized access to this system is strictly prohibited. #
+        #       Use of this system is limited to authorized individuals only.       #
+        #       All activities are monitored.                                       #
+        #############################################################################
+ 
+这样在我们登录的时候,可以看到/etc/issue中的信息,如下:
+ssh 192.168.27.142      
+ 
+        #############################################################################
+        #       Warning: Unauthorized access to this system is strictly prohibited. #
+        #       Use of this system is limited to authorized individuals only.       #
+        #       All activities are monitored.                                       #
+        #############################################################################
+ 
+ 
+root@192.168.27.142's password: 
+ 
+11.2)PrintLastLog
+----------------------------------------------------------------------------------------
+PrintLastLog用于显示在每一次成功登录后显示最后一位用户的登录信息,如下:
+PrintLastLog yes
+默认为yes
+# grep 'PrintLastLog'  /etc/ssh/sshd_config               
+#PrintLastLog yes
+
+ 
+ssh 192.168.27.142
+root@192.168.27.142's password: 
+Last login: Mon Jun  6 14:23:24 2011 from 192.168.27.143
+ 
+11.3)PrintMotd
+PrintMotd用于显示在每一次成功登录后显示/etc/motd中的信息,如下:
+ 
+cat /etc/motd
+ 
+ 
+ 
+        Welcome to
+         _  _
+        | ||_|                 
+        | | _ ____  _   _  _  _ 
+        | || |  _ \| | | |\ \/ /
+        | || | | | | |_| |/    \
+        |_||_|_| |_|\____|\_/\_/
+ 
+        Linux support by<newhitler@163.com>
+        My homepage:
+        http://ckhitler.lupaworld.com
+ 
+ 
+ 
+ssh 192.168.27.142
+root@192.168.27.142's password: 
+ 
+ 
+ 
+        Welcome to
+         _  _
+        | ||_|                 
+        | | _ ____  _   _  _  _ 
+        | || |  _ \| | | |\ \/ /
+        | || | | | | |_| |/    \
+        |_||_|_| |_|\____|\_/\_/
+ 
+        Linux support by<newhitler@163.com>
+        My homepage:
+        http://ckhitler.lupaworld.com
+ 
+ 
+11.4)ShowPatchLevel
+------------------------------------------------------------------------
+ShowPatchLevel用于在连接ssh端口时,是否返回SSH的补丁版本信息,如下:
+telnet 192.168.27.142 22
+Trying 192.168.27.142...
+Connected to 192.168.27.142.
+Escape character is '^]'. ctrl+]
+SSH-2.0-OpenSSH_5.3p1-FC-0.9-20.el6
+^]
+telnet> quit
+Connection closed.
+以上是指定ShowPatchLevel yes的结果.
+ 
+[root@ssh-client ~]# telnet 192.168.27.142 22
+Trying 192.168.27.142...
+Connected to 192.168.27.142.
+Escape character is '^]'.
+SSH-2.0-OpenSSH_5.3
+^]
+telnet> quit
+Connection closed.
+以上是指定ShowPatchLevel no的结果.
+ 
+我们建议如下的设置:
+Banner /etc/issue,/etc/issue放入警告信息.
+PrintMotd yes,在/etc/motd放入登录后的欢迎信息.
+ShowPatchLevel no,不显示ssh的补丁信息.
+PrintLastLog no,不显示最后一次的登录信息.
+ 
+ 
+ 
+12)数据加密算法
+-----------------------------------------------------------------------------------------------------------------------------------------
+我们可以通过Ciphers配置项来选择数据加密算法,如果服务端仅支持aes128-cbc,而客户端指定用arcfour加密算法连接登录服务端则不会成功.
+sshv2支持如下的加密算法,相同默认值也是如下的算法:
+aes128-cbc,aes192-cbc,aes256-cbc,aes128-ctr,aes192-ctr,aes256-ctr,3des-cbc,arcfour128,arcfour256,arcfour,blowfish-cbc,cast128-cbc
+上面的这些算法都是对称加密算法,而arcfour是最快的,这里的arcfour算法也就是rc4.
+ 
+下面是arcfour(rc4)对称加密算法的说明:
+会话密钥的前16个字节被服务器用作加密密钥,紧接着的下一个16字节被客户端用作加密密钥.结果是两个数据流方向上有两个独立的129位密钥.这种加密算法非常快
+ 
+ 
+我们可以通过openssl speed对加密算法进行测试,也可以指定几种加密算法进行测试,如下:
+openssl speed aes rc4 blowfish
+Doing rc4 for 3s on 16 size blocks: 40757592 rc4's in 1.28s
+Doing rc4 for 3s on 64 size blocks: 11500211 rc4's in 1.23s
+Doing rc4 for 3s on 256 size blocks: 2994613 rc4's in 1.45s
+Doing rc4 for 3s on 1024 size blocks: 770815 rc4's in 1.50s
+Doing rc4 for 3s on 8192 size blocks: 97511 rc4's in 1.37s
+Doing aes-128 cbc for 3s on 16 size blocks: 7294501 aes-128 cbc's in 1.39s
+Doing aes-128 cbc for 3s on 64 size blocks: 1996086 aes-128 cbc's in 1.30s
+Doing aes-128 cbc for 3s on 256 size blocks: 514051 aes-128 cbc's in 1.32s
+Doing aes-128 cbc for 3s on 1024 size blocks: 314747 aes-128 cbc's in 1.32s
+Doing aes-128 cbc for 3s on 8192 size blocks: 39487 aes-128 cbc's in 1.33s
+Doing aes-192 cbc for 3s on 16 size blocks: 6322661 aes-192 cbc's in 1.36s
+Doing aes-192 cbc for 3s on 64 size blocks: 1709890 aes-192 cbc's in 1.29s
+Doing aes-192 cbc for 3s on 256 size blocks: 431680 aes-192 cbc's in 1.39s
+Doing aes-192 cbc for 3s on 1024 size blocks: 271721 aes-192 cbc's in 1.37s
+Doing aes-192 cbc for 3s on 8192 size blocks: 32095 aes-192 cbc's in 1.54s
+Doing aes-256 cbc for 3s on 16 size blocks: 5116714 aes-256 cbc's in 1.49s
+Doing aes-256 cbc for 3s on 64 size blocks: 1406771 aes-256 cbc's in 1.43s
+Doing aes-256 cbc for 3s on 256 size blocks: 350117 aes-256 cbc's in 1.61s
+Doing aes-256 cbc for 3s on 1024 size blocks: 215622 aes-256 cbc's in 1.51s
+Doing aes-256 cbc for 3s on 8192 size blocks: 28925 aes-256 cbc's in 1.47s
+Doing blowfish cbc for 3s on 16 size blocks: 14535384 blowfish cbc's in 1.41s
+Doing blowfish cbc for 3s on 64 size blocks: 3924785 blowfish cbc's in 1.27s
+Doing blowfish cbc for 3s on 256 size blocks: 993143 blowfish cbc's in 1.34s
+Doing blowfish cbc for 3s on 1024 size blocks: 248679 blowfish cbc's in 1.34s
+Doing blowfish cbc for 3s on 8192 size blocks: 30867 blowfish cbc's in 1.46s
+OpenSSL 1.0.0-fips 29 Mar 2010
+built on: Wed Jun 30 08:58:02 EDT 2010
+options:bn(64,32) md2(int) rc4(4x,int) des(ptr,risc1,16,long) aes(partial) blowfish(idx) 
+compiler: gcc -fPIC -DOPENSSL_PIC -DZLIB -DOPENSSL_THREADS -D_REENTRANT -DDSO_DLFCN -DHAVE_DLFCN_H -DKRB5_MIT -DL_ENDIAN -DTERMIO -Wall -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -m32 -march=i686 -mtune=atom -fasynchronous-unwind-tables -Wa,--noexecstack -DOPENSSL_BN_ASM_PART_WORDS -DOPENSSL_IA32_SSE2 -DOPENSSL_BN_ASM_MONT -DSHA1_ASM -DSHA256_ASM -DSHA512_ASM -DMD5_ASM -DRMD160_ASM -DAES_ASM -DWHIRLPOOL_ASM
+The 'numbers' are in 1000s of bytes per second processed.
+type             16 bytes     64 bytes    256 bytes   1024 bytes   8192 bytes
+rc4             509469.90k   598384.96k   528704.09k   526209.71k   583073.07k
+blowfish cbc    164940.53k   197784.44k   189734.78k   190035.30k   173193.47k
+aes-128 cbc      83965.48k    98268.85k    99694.74k   244167.37k   243216.17k
+aes-192 cbc      74384.25k    84831.75k    79503.65k   203096.57k   170728.73k
+aes-256 cbc      54944.58k    62960.38k    55670.78k   146223.13k   161192.93k
+逐个算法测试速度
+复制代码
+# openssl speed 
+Doing md2 for 3s on 16 size blocks: 433966 md2's in 2.99s
+Doing md2 for 3s on 64 size blocks: 217987 md2's in 3.00s
+Doing md2 for 3s on 256 size blocks: 73398 md2's in 3.00s
+Doing md2 for 3s on 1024 size blocks: 20058 md2's in 2.99s
+Doing md2 for 3s on 8192 size blocks: 2611 md2's in 3.00s
+Doing md4 for 3s on 16 size blocks: 13554194 md4's in 3.00s
+Doing md4 for 3s on 64 size blocks: 10621007 md4's in 3.00s
+复制代码
+ 
+
+ 
+ 
+我们生成一个100MB的数据文件进行测试,如下:
+dd if=/dev/zero of=/tmp/bigfile.dat bs=1M count=100; shred -v -n3 /tmp/bigfile.dat
+ 
+我们指定用arcfour对称加密算法进行加密传输,这里用了2分10秒
+rsync -apur --stats --progress -e "ssh -c arcfour" bigfile.dat root@192.168.27.142:/tmp/      
+root@192.168.27.142's password: 
+sending incremental file list
+bigfile.dat
+  1048576000 100%    7.66MB/s    0:02:10 (xfer#1, to-check=0/1)
+ 
+Number of files: 1
+Number of files transferred: 1
+Total file size: 1048576000 bytes
+Total transferred file size: 1048576000 bytes
+Literal data: 1048576000 bytes
+Matched data: 0 bytes
+File list size: 28
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 1048704076
+Total bytes received: 31
+ 
+sent 1048704076 bytes  received 31 bytes  7464086.17 bytes/sec
+total size is 1048576000  speedup is 1.00
+ 
+ 
+我们指定用blowfish-cbc对称加密算法进行加密传输,这里用了2分17秒
+rsync -apur --stats --progress -e "ssh -c blowfish-cbc" bigfile.dat root@192.168.27.142:/tmp/ 
+root@192.168.27.142's password: 
+sending incremental file list
+bigfile.dat
+  1048576000 100%    7.26MB/s    0:02:17 (xfer#1, to-check=0/1)
+ 
+Number of files: 1
+Number of files transferred: 1
+Total file size: 1048576000 bytes
+Total transferred file size: 1048576000 bytes
+Literal data: 1048576000 bytes
+Matched data: 0 bytes
+File list size: 28
+File list generation time: 0.001 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 1048704076
+Total bytes received: 31
+ 
+sent 1048704076 bytes  received 31 bytes  7464086.17 bytes/sec
+total size is 1048576000  speedup is 1.00
+ 
+ 
+我们指定用aes128-ctr对称加密算法进行加密传输,这里用了2秒55秒
+rsync -apur --stats --progress -e "ssh -c aes128-ctr" bigfile.dat root@192.168.27.142:/tmp/ 
+root@192.168.27.142's password: 
+sending incremental file list
+bigfile.dat
+  1048576000 100%    5.71MB/s    0:02:55 (xfer#1, to-check=0/1)
+ 
+Number of files: 1
+Number of files transferred: 1
+Total file size: 1048576000 bytes
+Total transferred file size: 1048576000 bytes
+Literal data: 1048576000 bytes
+Matched data: 0 bytes
+File list size: 28
+File list generation time: 0.003 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 1048704076
+Total bytes received: 31
+ 
+sent 1048704076 bytes  received 31 bytes  5941666.33 bytes/sec
+total size is 1048576000  speedup is 1.00
+ 
+注:
+1)如果我们没有指Ciphers,将支持所有的加密算法,而客户端没有指定加密算法的话,我们首先使用的将是aes128-ctr对称加密算法.
+2)如果我们在服务端同时指定Ciphers arcfour,blowfish-cbc,aes128-ctr,而优先使用aes128-ctr其次是blowfish-cbc,最后是arcfour.
+ 
+最后我们建议在服务端的ciphers选项上仅指定arcfour算法.这样能最优化的进行数据加密传输.
+ 
+ 
+ 
+13)使用login程序登录
+=============================================================================================================
+UseLogin默认值是"no",如果指定UseLogin为yes,我们将在登录的过程中使用ssh服务端的login程序进行登录验证.
+ 
+我们对使用login程序进行测试如下:
+-----------------------------------------------
+将UseLogin修改为yes,如下:
+vi /etc/ssh/sshd_config
+UseLogin yes
+保存退出
+ 
+重启sshd服务
+/etc/init.d/sshd restart
+ 
+用客户端连接sshd服务端,如下:
+ssh  192.168.27.142 
+ 
+查看是否使用login程序,如下:
+ps -ef|grep login
+test      1717     1  0 03:59 ?        00:00:00 /usr/bin/gnome-keyring-daemon --daemonize --login
+root      2711  2709  0 05:25 ?        00:00:00 login -- root                        
+root      2732  2712  0 05:25 pts/2    00:00:00 grep login
+ 
+注:如果将login程序移走或删除,我们如果使用UseLogin yes,此时将无法登录ssh服务端.
+ 
+我们可以使用pam(基于Linux的插入式验证模块)加入一些login的认证功能.
+-------------------------------------------------------------------------------
+我们在/etc/pam.d/remote文件中加入pam_access.so模块,如下:
+vi /etc/pam.d/remote
+account    required     pam_access.so
+保存退出
+ 
+修改/etc/security/access.conf文件,如下:
+vi /etc/security/access.conf 
+加入:
+- : ALL : ALL
+保存退出. 
+注:
+现在我们拒绝所有通过ssh客户端的连接,但我们没有修改/etc/pam.d/login,所以我们本地我们还可以用login进行登录.
+通过ssh客户端连接报错如下:
+[root@ssh-client ~]# ssh  192.168.27.142 
+root@192.168.27.142's password: 
+ 
+Permission denied
+Connection to 192.168.27.142 closed.
+ 
+ 
+ 
+ 
+14)超时断开
+=================================================================================================================
+可以通过ClientAliveCountMax和ClientAliveInterval两个选项控制客户端在无响应的情况下断开连接.
+ClientAliveCountMax:
+sshd在未收到任何客户端回应前最多允许发送多少个"alive"消息,到达这个上限后,sshd 将强制断开连接,关闭会话.
+ 
+注意:
+需要注意的是,"alive"消息与TCPKeepAlive有很大差异.alive"消息是通过加密连接发送的,因此不会被欺骗,而TCPKeepAlive却是可以被欺骗的.
+如果ClientAliveInterval被设为15并且将ClientAliveCountMax保持为默认值(3),那么无应答的客户端大约会在45秒后被强制断开.这个指令仅可以用于SSH-2协议.
+ 
+ClientAliveInterval:
+设置一个以秒记的时长,如果超过这么长时间没有收到客户端的任何数据,sshd 将通过安全通道向客户端发送一个"alive"消息,并等候应答.
+默认值0表示不发送"alive"消息.这个选项仅对SSH-2有效.
+ 
+我们通过试验来测试超时断开的情况,如下:
+vi /etc/ssh/sshd_config
+ClientAliveCountMax 10
+ClientAliveInterval 1
+ 
+我们通过客户端连接SSH服务端,此时服务端向客户端发送alive消息,而客户端回应reply消息给服务端,发送的频率是每秒发送一次,如果没有响应则超过(10*1)秒后断开,如下:
+[root@ssh-client ~]# ssh  -v 192.168.27.142
+登录信息略...
+[root@ssh-server ~]# 
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+ 
+我们断开client端的网卡,如下:
+[root@ssh-client ~]# ifconfig eth1 down 
+ 
+此时服务端继续发送alive消息,而客户端由于断开,所以没有reply消息,所以我在刚才的登录终端再也看不到reply消息,我们可以通过tcpdump抓包来证实,如下:
+[root@ssh-server ~]# tcpdump -i eth1 'port 22 and host 192.168.27.143'
+ 
+此时客户端没有断开,所以服务端与客户端和3次握手的交互,如下:
+19:40:46.677914 IP ssh-server.ssh > 192.168.27.143.45105: Flags [P.], seq 2910:2974, ack 2422, win 478, options [nop,nop,TS val 9540813 ecr 9291132], length 64
+19:40:46.678596 IP 192.168.27.143.45105 > ssh-server.ssh: Flags [P.], seq 2422:2454, ack 2974, win 379, options [nop,nop,TS val 9292137 ecr 9540813], length 32
+19:40:46.678640 IP ssh-server.ssh > 192.168.27.143.45105: Flags [.], ack 2454, win 478, options [nop,nop,TS val 9540814 ecr 9292137], length 0
+19:40:47.681213 IP ssh-server.ssh > 192.168.27.143.45105: Flags [P.], seq 2974:3038, ack 2454, win 478, options [nop,nop,TS val 9541816 ecr 9292137], length 64
+19:40:47.682130 IP 192.168.27.143.45105 > ssh-server.ssh: Flags [P.], seq 2454:2486, ack 3038, win 379, options [nop,nop,TS val 9293140 ecr 9541816], length 32
+19:40:47.682167 IP ssh-server.ssh > 192.168.27.143.45105: Flags [.], ack 2486, win 478, options [nop,nop,TS val 9541817 ecr 9293140], length 0
+19:40:48.685266 IP ssh-server.ssh > 192.168.27.143.45105: Flags [P.], seq 3038:3102, ack 2486, win 478, options [nop,nop,TS val 9542820 ecr 9293140], length 64
+19:40:48.685863 IP 192.168.27.143.45105 > ssh-server.ssh: Flags [P.], seq 2486:2518, ack 3102, win 379, options [nop,nop,TS val 9294144 ecr 9542820], length 32
+19:40:48.685911 IP ssh-server.ssh > 192.168.27.143.45105: Flags [.], ack 2518, win 478, options [nop,nop,TS val 9542821 ecr 9294144], length 0
+19:40:49.690680 IP ssh-server.ssh > 192.168.27.143.45105: Flags [P.], seq 3102:3166, ack 2518, win 478, options [nop,nop,TS val 9543826 ecr 9294144], length 64
+19:40:49.691261 IP 192.168.27.143.45105 > ssh-server.ssh: Flags [P.], seq 2518:2550, ack 3166, win 379, options [nop,nop,TS val 9295149 ecr 9543826], length 32
+19:40:49.691311 IP ssh-server.ssh > 192.168.27.143.45105: Flags [.], ack 2550, win 478, options [nop,nop,TS val 9543826 ecr 9295149], length 0
+此时客户端已经断开,所以只有服务端的发送消息,没有客户端回应的消息,如下:
+19:40:50.698084 IP ssh-server.ssh > 192.168.27.143.45105: Flags [P.], seq 3166:3230, ack 2550, win 478, options [nop,nop,TS val 9544833 ecr 9295149], length 64
+19:40:50.902427 IP ssh-server.ssh > 192.168.27.143.45105: Flags [P.], seq 3166:3230, ack 2550, win 478, options [nop,nop,TS val 9545037 ecr 9295149], length 64
+19:40:51.311739 IP ssh-server.ssh > 192.168.27.143.45105: Flags [P.], seq 3166:3230, ack 2550, win 478, options [nop,nop,TS val 9545447 ecr 9295149], length 64
+19:40:52.128414 IP ssh-server.ssh > 192.168.27.143.45105: Flags [P.], seq 3166:3230, ack 2550, win 478, options [nop,nop,TS val 9546263 ecr 9295149], length 64
+19:40:53.763202 IP ssh-server.ssh > 192.168.27.143.45105: Flags [P.], seq 3166:3230, ack 2550, win 478, options [nop,nop,TS val 9547898 ecr 9295149], length 64
+19:40:57.028357 IP ssh-server.ssh > 192.168.27.143.45105: Flags [P.], seq 3166:3230, ack 2550, win 478, options [nop,nop,TS val 9551163 ecr 9295149], length 64
+19:41:00.749900 IP ssh-server.ssh > 192.168.27.143.45105: Flags [FP.], seq 3230:3806, ack 2550, win 478, options [nop,nop,TS val 9554885 ecr 9295149], length 576
+19:41:03.559115 IP ssh-server.ssh > 192.168.27.143.45105: Flags [FP.], seq 3166:3806, ack 2550, win 478, options [nop,nop,TS val 9557694 ecr 9295149], length 640
+19:41:16.616455 IP ssh-server.ssh > 192.168.27.143.45105: Flags [FP.], seq 3166:3806, ack 2550, win 478, options [nop,nop,TS val 9570751 ecr 9295149], length 640
+19:41:42.729343 IP ssh-server.ssh > 192.168.27.143.45105: Flags [FP.], seq 3166:3806, ack 2550, win 478, options [nop,nop,TS val 9596864 ecr 9295149], length 640
+最后我们看到服务端向客户端发送alive消息,客户端没有响应,服务端再不发送消息,此时客户端已经被认定断开.
+这里我们注意,断开后服务端不会一直向客户端发送消息,在发送了几次消息之后,客户端无响应,此时服务端将不会发送消息,直到等ClientAliveCountMax*ClientAliveInterval秒后断开.
+ 
+我们开启client端的网卡,如下:
+[root@ssh-client ~]# ifconfig eth1 up
+ 
+此时客户端连接服务端的ssh终端表现如下:
+[root@ssh-server ~]# debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+debug1: client_input_channel_req: channel 0 rtype keepalive@openssh.com reply 1
+Write failed: Broken pipe
+注:
+开启网卡后,但是已经超过了断开的限制,客户端已经断开,我们按回车后终端显示:Write failed: Broken pipe
+ 
+最后ssh服务端向被认定已经断开的客户端发送断开的命令,我们回到刚才的tcpdump抓包终端,显示如下:
+19:44:48.757691 IP ssh-server.ssh > 192.168.27.143.45105: Flags [R], seq 3345246483, win 0, length 0
+ 
+ 
+我们再来说明一下默认的配置:
+clientaliveinterval 0
+clientalivecountmax 3
+在这种情况下,我们视为ssh服务端为长连接,在这种情况上,客户端连接上后,服务端不再发送alive消息.如果客户端断开,服务端一直等待客户端的连接,不会主动断开.
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+ 
+同时我们也可以在客户端配置监测服务端的断开状态,如下:
+vi /etc/ssh/ssh_config
+ServerAliveCountMax 100
+ServerAliveInterval 1
+ 
+ServerAliveInterval    http://www.cnblogs.com/MYSQLZOUQI/p/5179713.html
+我们可以加上”-o ServerAliveInterval=60″选项，每60秒向ssh server发送心跳信号。（TCPKeepAlive在传输层 tcp/ip控制， ServerAliveInterval在应用层  sshd控制）
+还有一个TCPKeepAlive选项的作用是类似的，但是不如ServerAliveInterval 好，因为TCPKeepAlive在TCP层工作，发送空的TCP ACK packet，有可能会被防火墙丢弃；而ServerAliveInterval 在SSH层工作，发送真正的数据包，更可靠些。
+ 
+此时如果服务端断开,客户端将向服务端发送alive消息,判断服务端的状态.如果服务端断开,客户端将在ServerAliveCountMax*ServerAliveInterval秒后断开连接.
+断开消息如下:
+Timeout, server not responding.
+ 
+我们建议如下的配置:
+服务端:
+clientaliveinterval 300
+clientalivecountmax 2
+这样我们300秒向客户端发送一次alive信息,在600秒内客户端没有响应,客户端被断开,并且服务端清理客户端的连接.
+客户端:
+serveraliveinterval 300
+serveralivecountmax 2
+ 
+ 
+同时将客户端/服务端的tcpkeepalive选项关闭:
+tcpkeepalive no
+ 
+ 
+ 
+15)host-based验证
+==================================================================================================================================
+我们这里看到了另外一种验证(此前我们接触了password,rsa/dsa,GSSAPI等三种验证方式),这种验证方式基于主机名和公/私钥.
+其中host-based验证是基于ssh-v2
+ 
+首先我们要在客户端/服务端加入对方的主机名及IP对映,如下:
+服务端:
+vi /etc/hosts
+192.168.27.142  ssh-server      # Added by NetworkManager
+192.168.27.143  ssh-client      # Added by NetworkManager
+ 
+客户端:
+vi /etc/hosts
+192.168.27.142  ssh-server      # Added by NetworkManager
+192.168.27.143  ssh-client      # Added by NetworkManager
+ 
+修改服务端的ssh配置,如下:
+vi /etc/ssh/sshd_config
+ 
+#打开host_based的验证
+HostbasedAuthentication yes
+ 
+#不允许忽略~/.ssh/known_hosts
+IgnoreUserKnownHosts no
+ 
+#不允许忽略~/.shosts
+IgnoreRhosts no
+ 
+ 
+ 
+ 
+在服务端生成客户主机的密钥对,如下:
+ssh-keyscan -t rsa,dsa ssh-client > ~/.ssh/known_hosts
+ 
+将客户端主机名写入到用户主目录的.shosts文件中
+vi ~/.shosts
+ssh-client
+ 
+重启ssh服务端,如下:
+/etc/init.d/sshd restart
+ 
+ 
+在客户端修改ssh配置,如下:
+vi /etc/ssh/ssh_config
+ 
+#打开客户端的host_based验证
+HostbasedAuthentication yes
+EnableSSHKeysign yes
+ 
+我们在客户端登录SSH服务端,如下:
+ssh -v 192.168.27.142
+OpenSSH_5.3p1, OpenSSL 1.0.0-fips 29 Mar 2010
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug1: Connecting to 192.168.27.142 [192.168.27.142] port 22.
+debug1: Connection established.
+debug1: read PEM private key done: type DSA
+debug1: read PEM private key done: type RSA
+debug1: permanently_set_uid: 0/0
+debug1: identity file /root/.ssh/identity type -1
+debug1: identity file /root/.ssh/id_rsa type 1
+debug1: identity file /root/.ssh/id_dsa type -1
+debug1: Remote protocol version 2.0, remote software version OpenSSH_5.3
+debug1: match: OpenSSH_5.3 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_5.3
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: server->client aes128-ctr hmac-md5 none
+debug1: kex: client->server aes128-ctr hmac-md5 none
+debug1: SSH2_MSG_KEX_DH_GEX_REQUEST(1024<1024<8192) sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_GROUP
+debug1: SSH2_MSG_KEX_DH_GEX_INIT sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_REPLY
+debug1: Host '192.168.27.142' is known and matches the RSA host key.
+debug1: Found key in /root/.ssh/known_hosts:1
+debug1: ssh_rsa_verify: signature correct
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: SSH2_MSG_SERVICE_REQUEST sent
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: gssapi-keyex,gssapi-with-mic,hostbased  #注意:这里有hostbased身份验证方式
+debug1: Next authentication method: hostbased
+debug1: Remote: Accepted by .shosts.    #注意:这里加载服务端的.shosts文件
+debug1: Remote: Accepted host ssh-client ip 192.168.27.143 client_user root server_user root
+debug1: Authentication succeeded (hostbased). #注意:这里表示hostbased身份验证方式成功
+debug1: channel 0: new [client-session]
+debug1: Requesting no-more-sessions@openssh.com
+debug1: Entering interactive session.
+debug1: Sending environment.
+debug1: Sending env LANG = en_US.UTF-8
+Last login: Mon Jun 13 20:51:06 2011 from ssh-client
+ 
+ 
+注意:通过hostbased方式验证要保证登录的客户端的用户UID与服务端的UID一致.  跟rsync一样
+ 
+最后我们建议关闭hostbased和rhostsrsa验证方式,如下:
+HostbasedAuthentication no
+IgnoreUserKnownHosts yes
+IgnoreRhosts yes
+ 
+ 
+ 
+16)SSH的协议v1/v2
+----------------------------------------------------------------------------------------
+我们现在一般都使用SSH-v2,只有在比较老的系统上会看到仅支持ssh-v1,或一些网络设备.
+我们可以调整SSH服务,支持ssh-v1,如下:
+Protocol 1
+ 
+同时下面两个选项是只在ssh-v1下有用,如下:
+RSAAuthentication
+RhostsRSAAuthentication
+ 
+最后建议仅使用ssh-v2,同时关闭RSAAuthentication/RhostsRSAAuthentication,如下:
+Protocol 2
+RhostsRSAAuthentication no
+RSAAuthentication no
+复制代码
+# grep  -E -i 'protocol'  /etc/ssh/sshd_config
+# Disable legacy (protocol version 1) support in the server for new
+# activation of protocol 1
+Protocol 2
+# HostKey for protocol version 1
+# HostKeys for protocol version 2
+# similar for protocol version 2
+复制代码
+ 
+
+ 
+ 
+ 
+17)认证时限,未认证连接与认证次数  ssh的半连接
+我们可以通过MaxStartups选项对未认证连接的个数进行调整.  没有输入密码的都是未认证连接，除非用密钥登录！！
+下面的连接就是一个未认证连接:
+telnet 192.168.27.142 22
+Trying 192.168.27.142...
+Connected to 192.168.27.142.
+Escape character is '^]'.
+SSH-2.0-OpenSSH_5.3
+ 
+同样一个ssh的登录,在没有成功验证前,也是一个未认证连接,如下:
+ssh  root@192.168.27.142                            
+root@192.168.27.142's password:
+ 
+MaxStartups 10表示可以有10个ssh的半连接状态,就像上面一样.
+这个选项一定要配合LoginGraceTime选项一起使用.
+LoginGraceTime表示认证的时限,我们可以调整认证的时间限制,例如:
+LoginGraceTime 20
+即在20秒之内不能完成认证,则断开,如下:
+ssh  root@192.168.27.142
+root@192.168.27.142's password: 
+Connection closed by 192.168.27.142
+注意在这里如果密码输入错误,则重新计时,如果我们输错了密码,计时将重新开始,幸运的是我们有MaxAuthTries,来解决认证次数的问题.
+MaxAuthTries 1
+这里表示只允许输错一回密码.
+我们要注意的是除了SSH自身的选项控制认证次数外,它还通过pam进行验证,所以如果我们设置MaxAuthTries 10,则允许输错密码的次数可能还是3,如果MaxAuthTries 2,则以MaxAuthTries为准.
+如果是MaxAuthTries 2,我们输错密码的提示如下:
+ssh  root@192.168.27.142
+root@192.168.27.142's password: 
+Permission denied, please try again.
+root@192.168.27.142's password: 
+Received disconnect from 192.168.27.142: 2: Too many authentication failures for root
+ 
+# grep -E -i 'LoginGraceTime|MaxStartups|MaxAuthTries' /etc/ssh/sshd_config 
+#LoginGraceTime 2m
+#MaxAuthTries 6
+#MaxStartups 10:30:100
+ 
+
+ 
+ 
+ 
+18)DNS反向解析
+===============================================================================================================================================================
+UseDNS选项来决定是否对远程主机名进行反向解析,以检查此主机名是否与其IP地址真实对应.默认值为"yes".
+用strace对sshd登录服务时进行系统调用跟踪,我们发现如果采用UseDNS yes,客户端登录时,SSH服务端将会打开/etc/hosts,找对映的ip/hostname的解析记录,
+如果没有找到,这时将会用利用/lib/libnss_dns.so.2动态链接库去/etc/resolv.conf中找DNS服务器做反向解析查询.
+下面是/etc/hosts没有客户端的ip/hostname解析记录的strace调用过程,如下:
+2793  open("/etc/resolv.conf", O_RDONLY) = 4               /*打开/etc/resolv.conf*/
+2793  fstat64(4, {st_mode=S_IFREG|0644, st_size=92, ...}) = 0
+2793  mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb76f1000
+2793  read(4, "# Generated by NetworkManager\ndo"..., 4096) = 92
+2793  read(4, "", 4096)                 = 0
+2793  close(4)                          = 0
+2793  munmap(0xb76f1000, 4096)          = 0
+2793  open("/etc/host.conf", O_RDONLY)  = 4                /*打开/etc/host.conf,这步确认解析的顺序,是hosts(/etc/hosts)还是bind(/etc /resolv.conf)*/
+2793  fstat64(4, {st_mode=S_IFREG|0644, st_size=26, ...}) = 0
+2793  mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb76f1000
+2793  read(4, "multi on\norder hosts,bind\n", 4096) = 26
+2793  read(4, "", 4096)                 = 0
+2793  close(4)                          = 0
+2793  munmap(0xb76f1000, 4096)          = 0
+2793  futex(0xffab44, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+2793  open("/etc/hosts", O_RDONLY|O_CLOEXEC) = 4           /*打开/etc/hosts*/
+2793  fstat64(4, {st_mode=S_IFREG|0644, st_size=187, ...}) = 0
+2793  mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb76f1000
+2793  read(4, "#127.0.0.1\tlocalhost.localdomain"..., 4096) = 187
+2793  read(4, "", 4096)                 = 0
+2793  close(4)                          = 0
+2793  munmap(0xb76f1000, 4096)          = 0
+2793  open("/etc/ld.so.cache", O_RDONLY) = 4
+2793  fstat64(4, {st_mode=S_IFREG|0644, st_size=81400, ...}) = 0
+2793  mmap2(NULL, 81400, PROT_READ, MAP_PRIVATE, 4, 0) = 0xb7593000
+2793  close(4)                          = 0
+2793  open("/lib/libnss_dns.so.2", O_RDONLY) = 4           /*打开libnss_dns.so.2动态链接库*/
+2793  read(4, "\177ELF\1\1\1\3\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\0\f\0\0004\0\0\0"..., 512) = 512
+2793  fstat64(4, {st_mode=S_IFREG|0755, st_size=25596, ...}) = 0
+2793  mmap2(NULL, 24704, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 4, 0) = 0x71a000
+2793  mmap2(0x71f000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 4, 0x4) = 0x71f000
+2793  close(4)                          = 0
+2793  mprotect(0x71f000, 4096, PROT_READ) = 0
+2793  munmap(0xb7593000, 81400)         = 0
+2793  socket(PF_INET, SOCK_DGRAM|SOCK_NONBLOCK, IPPROTO_IP) = 4        /*连接DNS(192.168.27.2)*/
+2793  connect(4, {sa_family=AF_INET, sin_port=htons(53), sin_addr=inet_addr("192.168.27.2")}, 16) = 0
+2793  gettimeofday({1308208753, 877706}, NULL) = 0
+2793  poll([{fd=4, events=POLLOUT}], 1, 0) = 1 ([{fd=4, revents=POLLOUT}])
+2793  send(4, "G\323\1\0\0\1\0\0\0\0\0\0\003143\00227\003168\003192\7in-a"..., 45, MSG_NOSIGNAL) = 45
+2793  poll([{fd=4, events=POLLIN}], 1, 5000) = 1 ([{fd=4, revents=POLLIN}])
+2793  ioctl(4, FIONREAD, [122])         = 0
+2793  recvfrom(4, "G\323\201\203\0\1\0\0\0\1\0\0\003143\00227\003168\003192\7in-a"..., 1024, 0, {sa_family=AF_INET, sin_port=htons(5
+3), sin_addr=inet_addr("192.168.27.2")}, [16]) = 122                   /*返回解析记录*/
+2793  close(4)                          = 0
+ 
+注意:
+这是根据/etc/host.conf中配置的解析顺序(hosts/bind)来的,如果/etc/hosts中有解析记录,则不会通过/etc/resolv.conf中的DNS进行反向解析.
+如果我们关闭反向解析查询,即UseDNS = no,此时则不会用/etc/host.conf等文件进行hosts/bind反向解析查询.
+ 
+我们建议使用UseDNS no,因为这样效率更高.
+ 
+ 
+19)macs消息摘要算法
+============================================================
+指定允许在SSH-2中使用哪些消息摘要算法来进行数据校验.
+可以使用逗号分隔的列表来指定允许使用多个算法.默认值(包含所有可以使用的算法)是：
+hmac-md5,hmac-sha1,umac-64@openssh.com,hmac-ripemd160,hmac-ripemd160@openssh.com,hmac-sha1-96,hmac-md5-96
+ 
+ 
+Hash信息验证码HMAC(Hash message authentication codes)验证接收消息和发送消息的完全一致性(完整性).这在数据交换中非常关键,尤其当传输媒介如公共网络中不提供安全保证时更显其重要性.
+HMAC结合hash算法和共享密钥提供完整性.Hash散列通常也被当成是数字签名,但这种说法不够准确,两者的区别在于:Hash散列使用共享密钥,而数字签名基于公钥技术.
+hash算法也称为消息摘要
+1)双方必须在通信的两个原头处各自执行Hash函数计算.
+2)使用Hash函数很容易从消息计算出消息摘要,但其逆向反演过程以目前计算机的运算能力几乎不可实现.
+ 
+例如:
+发送方首先使用HMAC算法和共享密钥计算消息检查和,然后将计算结果A封装进数据包中一起发送;接收方再对所接收的消息执行HMAC计算得出结果B,并将B与A进行比较.如果消息在传输中遭篡改致使B与A不一致,接收方丢弃该数据包.
+有两种最常用的hash函数：
+·HMAC-MD5 MD5(消息摘要5)基于RFC1321.MD5对MD4做了改进,计算速度比MD4稍慢,但安全性能得到了进一步改善.MD5在计算中使用了64个32位常数,最终生成一个128位的完整性检查和. 
+·HMAC-SHA 安全Hash算法定义在NIST FIPS 180-1,其算法以MD5为原型.SHA在计算中使用了79个32位常数,最终产生一个160位完整性检查和.SHA检查和长度比MD5更长,因此安全性也更高.
+ 
+ 
+说到底MACs就是用于确保双方数据传输的完整性.
+ 
+SSH服务端提供可以使用的消息摘要算法,由客户端指定要使用哪种消息摘要.
+ 
+SSH服务端默认配置支持所有消息摘要算法,我们用客户端连接服务端,可以看有支持的所有消息摘要算法,如下:
+ 
+ssh -vv 192.168.27.142 
+OpenSSH_5.3p1, OpenSSL 1.0.0-fips 29 Mar 2010
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug2: ssh_connect: needpriv 0
+debug1: Connecting to 192.168.27.142 [192.168.27.142] port 22.
+debug1: Connection established.
+debug1: read PEM private key done: type DSA
+debug1: read PEM private key done: type RSA
+debug1: permanently_set_uid: 0/0
+debug1: identity file /root/.ssh/identity type -1
+debug2: key_type_from_name: unknown key type '-----BEGIN'
+debug2: key_type_from_name: unknown key type 'Proc-Type:'
+debug2: key_type_from_name: unknown key type 'DEK-Info:'
+debug2: key_type_from_name: unknown key type '-----END'
+debug1: identity file /root/.ssh/id_rsa type 1
+debug1: identity file /root/.ssh/id_dsa type -1
+debug1: Remote protocol version 2.0, remote software version OpenSSH_5.3
+debug1: match: OpenSSH_5.3 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_5.3
+debug2: fd 3 setting O_NONBLOCK
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug2: kex_parse_kexinit: diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
+debug2: kex_parse_kexinit: ssh-rsa,ssh-dss
+debug2: kex_parse_kexinit: aes128-ctr,aes192-ctr,aes256-ctr,arcfour256,arcfour128,aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc,arcfour,rijndael-cbc@lysator.liu.se
+debug2: kex_parse_kexinit: aes128-ctr,aes192-ctr,aes256-ctr,arcfour256,arcfour128,aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc,arcfour,rijndael-cbc@lysator.liu.se
+debug2: kex_parse_kexinit: hmac-md5,hmac-sha1,umac-64@openssh.com,hmac-ripemd160,hmac-ripemd160@openssh.com,hmac-sha1-96,hmac-md5-96
+debug2: kex_parse_kexinit: hmac-md5,hmac-sha1,umac-64@openssh.com,hmac-ripemd160,hmac-ripemd160@openssh.com,hmac-sha1-96,hmac-md5-96
+/*这里就是服务端与客户端的消息摘要算法的确定*/
+ 
+我们修改ssh服务端的摘要算法如下:
+vi /etc/ssh/sshd_config
+macs hmac-md5,hmac-sha1
+ 
+我们修改ssh客户端的摘要算法如下:
+vi /etc/ssh/ssh_config
+macs hmac-sha1
+ 
+我们再次登录ssh服务端,如下:
+[root@ssh-client ~]# ssh -vv 192.168.27.142 
+OpenSSH_5.3p1, OpenSSL 1.0.0-fips 29 Mar 2010
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug2: mac_setup: found hmac-sha1
+debug2: ssh_connect: needpriv 0
+debug1: Connecting to 192.168.27.142 [192.168.27.142] port 22.
+debug1: Connection established.
+debug1: read PEM private key done: type DSA
+debug1: read PEM private key done: type RSA
+debug1: permanently_set_uid: 0/0
+debug1: identity file /root/.ssh/identity type -1
+debug2: key_type_from_name: unknown key type '-----BEGIN'
+debug2: key_type_from_name: unknown key type 'Proc-Type:'
+debug2: key_type_from_name: unknown key type 'DEK-Info:'
+debug2: key_type_from_name: unknown key type '-----END'
+debug1: identity file /root/.ssh/id_rsa type 1
+debug1: identity file /root/.ssh/id_dsa type -1
+debug1: Remote protocol version 2.0, remote software version OpenSSH_5.3
+debug1: match: OpenSSH_5.3 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_5.3
+debug2: fd 3 setting O_NONBLOCK
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug2: kex_parse_kexinit: diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1
+debug2: kex_parse_kexinit: ssh-rsa,ssh-dss
+debug2: kex_parse_kexinit: aes128-ctr,aes192-ctr,aes256-ctr,arcfour256,arcfour128,aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc,arcfour,rijndael-cbc@lysator.liu.se
+debug2: kex_parse_kexinit: aes128-ctr,aes192-ctr,aes256-ctr,arcfour256,arcfour128,aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc,arcfour,rijndael-cbc@lysator.liu.se
+debug2: kex_parse_kexinit: hmac-sha1
+debug2: kex_parse_kexinit: hmac-sha1
+注:这里选择用hmac-sha1摘要算法.
+最后我们建议使用hmac-md5
+ 
+ 
+ 
+20)authorized_keys的权限检查
+===================================================================================================
+StrictModes指定是否要求在接受连接请求前对用户主目录和相关的配置文件进行宿主和权限检查.
+ 
+我们首先采用公/私钥的方式进行验证,同时打开strictmodes选项.
+如下:
+vi /etc/ssh/sshd_config
+strictmodes yes
+ 
+此时SSH服务端的authorized_keys文件的权限是400,如下:
+ls -l /root/.ssh/authorized_keys 
+-r-------- 1 root root 605 Jun 17 09:02 /root/.ssh/authorized_keys
+ 
+我们将SSH服务端的authorized_keys文件的权限改为777,如下:
+chmod 777 /root/.ssh/authorized_keys
+ 
+此时不能再通过公/私钥的方式进行验证了,如下:
+-------------------------------------------------
+ssh -v root@192.168.27.142
+OpenSSH_5.3p1, OpenSSL 1.0.0-fips 29 Mar 2010
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug1: Connecting to 192.168.27.142 [192.168.27.142] port 22.
+debug1: Connection established.
+debug1: read PEM private key done: type DSA
+debug1: read PEM private key done: type RSA
+debug1: permanently_set_uid: 0/0
+debug1: identity file /root/.ssh/identity type -1
+debug1: identity file /root/.ssh/id_rsa type 1
+debug1: identity file /root/.ssh/id_dsa type 2
+debug1: Remote protocol version 2.0, remote software version OpenSSH_5.3
+debug1: match: OpenSSH_5.3 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_5.3
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: server->client aes128-ctr hmac-sha1 none
+debug1: kex: client->server aes128-ctr hmac-sha1 none
+debug1: SSH2_MSG_KEX_DH_GEX_REQUEST(1024<2048<8192) sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_GROUP
+debug1: SSH2_MSG_KEX_DH_GEX_INIT sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_REPLY
+debug1: Host '192.168.27.142' is known and matches the RSA host key.
+debug1: Found key in /root/.ssh/known_hosts:1
+debug1: ssh_rsa_verify: signature correct
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: SSH2_MSG_SERVICE_REQUEST sent
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password,hostbased
+debug1: Next authentication method: publickey /*采用publickey的方式进行身份验证,但是因为authorized_keys文件的权限是777,所以验证不能通过*/
+debug1: Trying private key: /root/.ssh/identity
+debug1: Offering public key: /root/.ssh/id_rsa
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password,hostbased
+debug1: Offering public key: /root/.ssh/id_dsa
+debug1: Authentications that can continue: publickey,gssapi-keyex,gssapi-with-mic,password,hostbased
+debug1: Next authentication method: password  /*此时只能采用password进行身份验证*/
+root@192.168.27.142's password: 
+最后我们强烈建议使用默认值"yes"来预防可能出现的低级错误.
+ 
+ 
+ 
+ 
+21)阻止root(uid=0)用户使用ssh远程登录
+==================================================================
+将PermitRootLogin选项改为no,即可阻止root用户远程登录.
+默认是:PermitRootLogin yes
+ 
+如果调整为:
+PermitRootLogin without-password
+则可以用root用户访问ssh服务端,但前提是使用公/私钥的方式访问,而不能是password的认证方式.
+建议采用:
+PermitRootLogin no
+ 
+ 
+ 
+22)不允许root(uid=0)空口令登录系统
+===================================================================================
+将PermitEmptyPasswords选项改为no,即可阻止root用户以空口令的方式登录.默认为no.
+ 
+如改成PermitEmptyPasswords yes,可允许root用户以空口令的方式登录系统.
+建议采用:
+PermitEmptyPasswords no
+ 
+ 
+ 
+23)挑战应答验证
+将ChallengeResponseAuthentication改为no则关闭挑战应答验证.
+建议将挑战应答验证方式关闭,如下:
+ChallengeResponseAuthentication no
+ 
+ 
+ 
+24)分离特权
+===========================================================================================================================================
+将UsePrivilegeSeparation改为yes即客户端连接ssh服务端时,SSH服务端通过创建非特权子进程处理接入请求的方法来进行权限分离,默认值是"yes".
+这样做的目的是为了防止通过有缺陷的子进程提升权限，从而使系统更加安全。
+ 
+将ssh服务端改成如下的配置:
+vi /etc/ssh/sshd_config
+UsePrivilegeSeparation no
+ 
+ps -ef|grep ssh
+avahi     1113     1  0 10:11 ?        00:00:00 avahi-daemon: registering [ssh-server.local]
+root      1682     1  0 10:13 ?        00:00:00 sshd: root@pts/0 
+root      2046     1  0 11:13 ?        00:00:00 /usr/sbin/sshd
+ 
+客户端连接服务端,不进行认证,如下:
+ssh 192.168.27.142    
+root@192.168.27.142's password: 
+ 
+查看服务端ssh进程连接状态,如下:
+ps -ef|grep ssh
+avahi     1113     1  0 10:11 ?        00:00:00 avahi-daemon: registering [ssh-server.local]
+root      1682     1  0 10:13 ?        00:00:00 sshd: root@pts/0 
+root      2046     1  0 11:13 ?        00:00:00 /usr/sbin/sshd
+root      2097  2046  0 11:30 ?        00:00:00 sshd: root       
+注:
+我们看到的sshd连接如下,sshd: root.
+ 
+修改服务端的UsePrivilegeSeparation为yes
+vi /etc/ssh/sshd_config
+UsePrivilegeSeparation yes
+ 
+客户端连接服务端,不进行认证,如下:
+ssh 192.168.27.142    
+root@192.168.27.142's password: 
+ 
+查看服务端ssh进程连接状态,如下:
+ps -ef|grep ssh         
+avahi     1113     1  0 10:11 ?        00:00:00 avahi-daemon: registering [ssh-server.local]
+root      1682     1  0 10:13 ?        00:00:00 sshd: root@pts/0 
+root      2119     1  0 11:32 ?        00:00:00 /usr/sbin/sshd
+root      2121  2119  0 11:32 ?        00:00:00 sshd: root [priv]
+sshd      2122  2121  0 11:32 ?        00:00:00 sshd: root [net] 
+注:
+我们看到ssh在认证时,分离出sshd: root [priv]和sshd: root [net]
+我们用sshd的debug 3的方式看到,ssh服务当时的处理操作,如下:
+ 
+debug2: Network child is on pid 1988                           
+debug3: preauth child monitor started                          
+debug3: mm_request_receive entering                            
+debug3: privsep user:group 74:74                               
+debug1: permanently_set_uid: 74/74      
+ 
+注意:在登录过程中,ssh派生子进程时会用setuid的sshd用户.
+ 
+ 
+ 
+ 
+25)使用PAM
+在SSH服务端使用UsePAM yes,则ssh服务端会加载/etc/pam.d/sshd,我们做下面的试验
+修改sshd的pam,加入session     required      pam_limits.so,如下:
+vi /etc/pam.d/sshd
+session     required      pam_limits.so
+ 
+修改cat /etc/security/limits.conf ,如下:
+*               soft    core            1000
+ 
+客户端登录SSH服务端,查看core limit,如下:
+ulimit -c
+1000
+ 
+关闭SSH服务端的的PAM认证,如下:
+vi /etc/ssh/sshd_config
+UsePAM no
+ 
+再次从客户端登录ssh服务端,查看core limit,如下:
+ulimit -c
+0
+ 
+我们证明ssh/PAM是起作用的,通过SSH/PAM可实现limit.conf的动态加载.
+我们建议使用SSH/PAM,如下:
+UsePAM yes
+ 
+ 
+ 
+26)开启压缩选项
+我们可以打开Compression选项,即:
+vi /etc/ssh/sshd_config
+Compression yes
+ 
+测试的压缩效果如下:
+scp  -v /tmp/test root@192.168.27.142:/tmp   
+略
+debug1: Sending command: scp -v -t /tmp
+Sending file modes: C0644 209715200 test
+Sink: C0644 209715200 test
+test                                                                                              100%  200MB   9.1MB/s   00:22    
+debug1: client_input_channel_req: channel 0 rtype exit-status reply 0
+debug1: channel 0: free: client-session, nchannels 1
+debug1: fd 0 clearing O_NONBLOCK
+debug1: fd 1 clearing O_NONBLOCK
+Transferred: sent 209936128, received 56592 bytes, in 22.3 seconds
+Bytes per second: sent 9430610.8, received 2542.2
+debug1: Exit status 0
+注:
+用SCP时不启用压缩选项,此时传输200MB的数据大概用了22秒.
+ 
+scp启用压缩选项,即在命令行中加入-C,如下:
+scp  -C -v /tmp/test root@192.168.27.142:/tmp
+Executing: program /usr/bin/ssh host 192.168.27.142, user root, command scp -v -t /tmp
+Sending file modes: C0644 209715200 test
+test                                                                                                0%    0     0.0KB/s   --:-- ETASink: C0644 209715200 test
+test                                                                                              100%  200MB  14.3MB/s   00:14    
+debug1: client_input_channel_req: channel 0 rtype exit-status reply 0
+debug1: channel 0: free: client-session, nchannels 1
+debug1: fd 0 clearing O_NONBLOCK
+debug1: fd 1 clearing O_NONBLOCK
+Transferred: sent 615920, received 54144 bytes, in 13.6 seconds
+Bytes per second: sent 45267.3, received 3979.3
+debug1: Exit status 0
+debug1: compress outgoing: raw data 209830605, compressed 448191, factor 0.00
+debug1: compress incoming: raw data 29449, compressed 14259, factor 0.48
+注:
+我们看到启用压缩选项,此时传输200MB的数据只用了14秒.
+最后它还显示了压缩的详细信息.
+# grep -E -i 'Compression' /etc/ssh/sshd_config 
+#Compression delayed
+ 
+
+ 
+ 
+ 
+ 
+27)SSH监听端口
+===============================================================================================
+我们可以指定ssh监听的端口,使用Port选项,也可以多次使用Port,来指定多个端口,我们试一下:
+vi /etc/ssh/sshd_config
+Port 22
+Port 56000
+ 
+重启SSH服务:
+/etc/init.d/sshd restart
+ 
+查看端口:
+netstat -tulnp|grep ssh 
+tcp        0      0 0.0.0.0:56000               0.0.0.0:*                   LISTEN      1810/sshd           
+tcp        0      0 0.0.0.0:22                  0.0.0.0:*                   LISTEN      1810/sshd      
+注:我们看到已经指定了22和56000两个端口.
+我们建议使用一个1024端口以上的SSH绑定端口,如54321等  1024以下需要root用户！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+ 
+ 
+ 
+ 
+28)SSH的网络接口
+=================================================================================================================
+我们可以指定要绑定的网络接口,使用的是ListenAddress,默认是监听所有接口,我们给它绑定到eth1(192.168.27.142),如下:
+vi /etc/ssh/sshd_config
+ListenAddress 192.168.27.142
+ 
+重启SSH服务:
+/etc/init.d/sshd restart
+ 
+查看绑定地址:
+tcp        0      0 192.168.27.142:56000        0.0.0.0:*                   LISTEN      1838/sshd           
+tcp        0      0 192.168.27.142:22           0.0.0.0:*                   LISTEN      1838/sshd           
+我们建议绑定到内网通讯的网卡地址,如192.168.27.142,而不是公网地址.
+ 
+ 
+ 
+ 
+29)SSH的协议族:
+我们可以指定SSH的协议族,使用的是AddressFamily,默认是使用所有协议族any,我们还可以指定inet(ipv4),inet6(ipv6).
+这里建议使用any,支持所有的协议族.
+ 
+ 
+ 
+ 
+30)外部子系统
+===============================================================================
+我们可以配置一个外部的子系统,仅用于SSH-V2协议,一般这里使用sftp,如下:
+Subsystem       sftp    /usr/libexec/openssh/sftp-server
+如关闭该选项,将无法使用sftp.
+我们看一下使用sftp的通讯过程,如下:
+sftp -v 192.168.27.142        /*采用sftp的方式连接ssh服务端*/
+Connecting to 192.168.27.142...
+OpenSSH_5.3p1, OpenSSL 1.0.0-fips 29 Mar 2010
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug1: Connecting to 192.168.27.142 [192.168.27.142] port 22.
+debug1: Connection established.
+debug1: permanently_set_uid: 0/0
+debug1: identity file /root/.ssh/id_rsa type 1
+debug1: identity file /root/.ssh/id_dsa type 2
+debug1: Remote protocol version 2.0, remote software version OpenSSH_5.3
+debug1: match: OpenSSH_5.3 pat OpenSSH*
+debug1: Enabling compatibility mode for protocol 2.0
+debug1: Local version string SSH-2.0-OpenSSH_5.3
+debug1: SSH2_MSG_KEXINIT sent
+debug1: SSH2_MSG_KEXINIT received
+debug1: kex: server->client aes128-ctr hmac-md5 none
+debug1: kex: client->server aes128-ctr hmac-md5 none
+debug1: SSH2_MSG_KEX_DH_GEX_REQUEST(1024<1024<8192) sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_GROUP
+debug1: SSH2_MSG_KEX_DH_GEX_INIT sent
+debug1: expecting SSH2_MSG_KEX_DH_GEX_REPLY
+debug1: Host '192.168.27.142' is known and matches the RSA host key.
+debug1: Found key in /root/.ssh/known_hosts:1
+debug1: ssh_rsa_verify: signature correct
+debug1: SSH2_MSG_NEWKEYS sent
+debug1: expecting SSH2_MSG_NEWKEYS
+debug1: SSH2_MSG_NEWKEYS received
+debug1: SSH2_MSG_SERVICE_REQUEST sent
+debug1: SSH2_MSG_SERVICE_ACCEPT received
+debug1: Authentications that can continue: gssapi-keyex,gssapi-with-mic,password,hostbased
+debug1: Next authentication method: password
+root@192.168.27.142's password: 
+debug1: Authentication succeeded (password).
+debug1: channel 0: new [client-session]
+debug1: Requesting no-more-sessions@openssh.com
+debug1: Entering interactive session.
+debug1: Sending environment.
+debug1: Sending env LANG = en_US.UTF-8
+debug1: Sending subsystem: sftp         /*在这里启用了sftp子系统*/
+sftp> 
+ 
+我们看一下服务端的进程:
+ps -ef|grep ssh
+avahi     1133     1  0 03:08 ?        00:00:00 avahi-daemon: registering [ssh-server.local]
+root      1718     1  0 03:14 ?        00:00:00 sshd: root@pts/0 
+root      2005     1  0 03:50 ?        00:00:00 /usr/sbin/sshd
+root      2023  2005  0 03:52 ?        00:00:00 sshd: root@notty 
+root      2025  2023  0 03:52 ?        00:00:00 /usr/libexec/openssh/sftp-server
+注:
+我们看到服务端启用了sftp-server为sftp客户请求服务.
+ 
+ 
+# grep -E -i 'Subsystem' /etc/ssh/sshd_config 
+# override default of no subsystems
+Subsystem    sftp    /usr/libexec/openssh/sftp-server
+ 
+
+ 
+ 
+31)设定主机的私钥文件
+==========================================================================================
+在ssh中可以用HostKey指定主机的私钥文件,如不指定则无法启用ssh服务,默认的是如下的配置:
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_dsa_key
+我们看到这里支持两个非对称加密算法,分别是rsa和dsa.
+事实上在进入身份验证之前,客户端要与服务端确认服务端的公/私钥是否改变过,
+即客户端会用服务端主机公钥对一段消息进行加密,而服务端会用自己的主机密钥进行解密.
+从而校验数据,达到主机身份确认的效果.
+ 
+如果主机被重装过,或重新生成了新的RSA/DSA密钥,则登录该主机时会重新在客户端生成公钥并写入到~/.ssh/known_hosts
+ 
+ 
+ 
+32)Kerberos的身份验证
+=================================
+Kerberos是针对分布式环境而设计的,如果不需要可以关闭这种身份验证方式.
+所以建议如下的配置:
+kerberosauthentication no
+kerberosorlocalpasswd no
+kerberosticketcleanup yes
+# grep -E -i 'kerberosauthentication|kerberosorlocalpasswd|kerberosticketcleanup' /etc/ssh/sshd_config 
+#KerberosAuthentication no
+#KerberosOrLocalPasswd yes
+#KerberosTicketCleanup yes
+ 
+
+ 
+33)ChrootDirectory监狱
+限制SSH用户访问Linux中指定的目录
+=============================================
+http://os.51cto.com/art/201703/534895.htm#topx
+#UsePrivilegeSeparation yes
+#PermitUserEnvironment no
+#Compression delayed
+#ClientAliveInterval 0
+#ClientAliveCountMax 3
+#ShowPatchLevel no
+#UseDNS yes
+#PidFile /var/run/sshd.pid
+#MaxStartups 10
+#PermitTunnel no
+ChrootDirectory none  <-------------------------------------
+
+# no default banner path
+#Banner none
+
+# override default of no subsystems
+Subsystem    sftp    /usr/libexec/openssh/sftp-server
+
+# Example of overriding settings on a per-user basis
+Match User test  <-------------------------------------
+
+
+ 
+ 
+ 
+ 
+三)SSH客户端的配置项:
+1)客户端发现SSH服务端timeout后,可以在指定的秒数后断开连接,避免不必要的等待,这个参数就是:
+ConnectTimeout 3  单位是秒
+注:这里是等待3秒.，默认值就是3秒
+ 
+例如:我们连接一个不存在的服务器(111.111.111.111)
+time ssh -v 111.111.111.111
+OpenSSH_5.3p1, OpenSSL 1.0.0-fips 29 Mar 2010
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: Applying options for *
+debug1: Connecting to 111.111.111.111 [111.111.111.111] port 22.
+debug1: Allocated local port 1023.
+debug1: connect to address 111.111.111.111 port 22: Connection timed out
+ssh: connect to host 111.111.111.111 port 22: Connection timed out
+ 
+real    0m3.029s
+user    0m0.006s
+sys     0m0.007s
+注:我们在这里看到一共等待在大概3秒钟.
+# grep -E -i 'ConnectTimeout' /etc/ssh/ssh_config 
+#   ConnectTimeout 0
+保持默认即可
+
+time ssh 111.111.111.111
+指定超时时间
+time ssh -o ConnectTimeout=3 111.111.111.111  
+
+
+man /etc/ssh/ssh_config  >/tmp/3.txt
+
+#       $OpenBSD: ssh_config,v 1.25 2009/02/17 01:28:32 djm Exp $
+
+# This is the ssh client system-wide configuration file.   See  #
+ssh_config(5)  for more information.  This file provides defaults
+for # users, and the values can be changed in per-user configura-
+tion files # or on the command line.
+
+
+ 
+ 
+2)有关于客户端的SSH压缩设定,在客户端如果设定Compression yes,则表示支持压缩,压缩会提高网络吐吞量,但会增加CPU的消耗.
+如果客户大量使用gzip对数据压缩后再通过scp传输,则ssh的compression并不会有任何效果,反而会降纸网络吐吞量.
+同时SSH V2中也不支持压缩级别.
+ 
+我们使用ssh的debug模式连接ssh服务端,可以看到压缩的情况,我们在断开时看到如下的信息:
+[test@ssh-server ~]$ exitdebug1: client_input_channel_req: channel 0 rtype exit-status reply 0
+debug1: client_input_channel_req: channel 0 rtype eow@openssh.com reply 0
+ 
+logout
+debug1: channel 0: free: client-session, nchannels 1
+Connection to 192.168.27.142 closed.
+Transferred: sent 1104, received 2576 bytes, in 4.9 seconds
+Bytes per second: sent 225.7, received 526.7
+debug1: Exit status 0
+debug1: compress outgoing: raw data 459, compressed 299, factor 0.65
+debug1: compress incoming: raw data 455, compressed 310, factor 0.68
+ 
+ 
+3)我们也可以调整使用身份验证方式的优先顺序,我们用到的选项是PreferredAuthentications,如果我们优先使用password,那么可以设定如下的配置:
+PreferredAuthentications password,publickey,keyboard-interactive
+ PreferredAuthentications：没有这个选项，需要自己添加
+ 
+ 
+4)我们可以设定CheckHostIP选项防止DNS欺骗,如下:
+首先设定CheckHostIP选项,如下:
+vi /etc/ssh/ssh_config
+CheckHostIP yes
+# grep -E -i 'CheckHostIP' /etc/ssh/ssh_config 
+#   CheckHostIP yes
+ 
+
+ 
+编辑hosts,设定192.168.27.142对映的主机名为ssh-server
+vi /etc/hosts
+192.168.27.142  ssh-server      # Added by NetworkManager
+ 
+连接ssh服务端(ssh-server),注意这里用主机名连接,如下:
+ssh   root@ssh-server  
+root@ssh-server's password:
+注:我们看到没有问题.
+ 
+我们这时修改/etc/hosts中ssh-server主机名对映的IP,如下:
+vi /etc/hosts
+192.168.27.143  ssh-sever
+ 
+再次连接ssh服务端(ssh-server),如下:
+ssh   test@ssh-server    
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   注:我们看到checkhostip起到了作用.
+@       WARNING: POSSIBLE DNS SPOOFING DETECTED!          @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+The RSA host key for ssh-server has changed,
+and the key for the corresponding IP address 192.168.27.143
+is unknown. This could either mean that
+DNS SPOOFING is happening or the IP address for the host
+and its host key have changed at the same time.
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  注:这条信息不是checkhostip产生的.
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+It is also possible that the RSA host key has just been changed.
+The fingerprint for the RSA key sent by the remote host is
+49:35:e5:fe:1e:f4:cd:e2:50:d6:2e:57:35:cb:45:42.
+Please contact your system administrator.
+Add correct host key in /root/.ssh/known_hosts to get rid of this message.
+Offending key in /root/.ssh/known_hosts:1
+Password authentication is disabled to avoid man-in-the-middle attacks.
+Keyboard-interactive authentication is disabled to avoid man-in-the-middle attacks.
+Permission denied (publickey,gssapi-keyex,gssapi-with-mic,password,hostbased).
+ 
+ 
+5)处理known_hosts的三种方式.
+======================================================================================================================
+当用ssh连接对方的主机时,如果known_hosts中没有对方主机的公钥,则会看到一个加入主机公钥确认身份的提示信息,如下:
+ssh   test@ssh-server  
+The authenticity of host 'ssh-server (192.168.27.142)' can't be established.
+RSA key fingerprint is ce:0c:74:71:87:a2:4a:92:98:55:25:f4:51:62:ea:59.
+Are you sure you want to continue connecting (yes/no)? 
+这是因为客户端配置了StrictHostKeyChecking ask造成的.
+我们可以调整StrictHostKeyChecking选项为no,这样会把对方的公钥直接加入到known_hosts文件中.
+如果调整StrictHostKeyChecking选项为yes,这样直接拒绝加入对方的公钥,需要手工来填加.如下:
+ssh   test@ssh-server  
+No RSA host key is known for ssh-server and you have requested strict checking.
+Host key verification failed.
+ 
+ 
+6)有关于known_hosts的两种文件格式
+一种是主机名(IP)明文存放的格式
+一种是主机名(IP)被哈希过的格式
+我们可以通过HashKnownHosts这个选项来调整,如下:
+vi /etc/ssh/ssh_config
+HashKnownHosts yes
+ 
+最后我们看一下明文存放的格式,如下:
+ssh-server ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAmgy1TPb2Beaw+XZa2ZY129nmE8klTMFPeJXZYbl577M/O2DLjInoYhK32mQKSc7NK3NQtxqkMp9Mz+vIdC4es
+Lz1+mRWjBOHPIfNjhLyl1RgZHKQRJZKamRiYru2sjjv5wPM21eSgaAozDF6pPAKgda0CQUcZSUokU7AZuBETlMJkEalp/+NIVdHuCrnoUmRcc4EW7v2/xAUb9pO12lgyhg2b
+j6S7BLSOSuEtKEjxHHrP5FOWwzTont78K1hrBHIFqgFmnyUIljWoRqzoufvSTMpDZHxlcjO+4o427QjS17viz7ftGpY6ObRzV1VHJJoCeUqdcWDJZDXMR+RlA1H9Q==
+我们看到里面包括了主机名及非对称加密的算法.
+ 
+如果是哈希过的格式,如下:
+|1|u79t0dab3Mh8GnB7O4+zCzvw3Ho=|p4454t3nwTGWWWog5x21ouHANhc= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAmgy1TPb2Beaw+XZa2ZY129nmE8klTMFPeJX
+ZYbl577M/O2DLjInoYhK32mQKSc7NK3NQtxqkMp9Mz+vIdC4esLz1+mRWjBOHPIfNjhLyl1RgZHKQRJZKamRiYru2sjjv5wPM21eSgaAozDF6pPAKgda0CQUcZSUokU7AZuB
+ETlMJkEalp/+NIVdHuCrnoUmRcc4EW7v2/xAUb9pO12lgyhg2bj6S7BLSOSuEtKEjxHHrP5FOWwzTont78K1hrBHIFqgFmnyUIljWoRqzoufvSTMpDZHxlcjO+4o427QjS17
+viz7ftGpY6ObRzV1VHJJoCeUqdcWDJZDXMR+RlA1H9Q==
+这里我们看不到主机名,因为它被哈希过了,但是还是可以看到使用的非对称加密算法.
+ 
+ 
+ 
+四)建议的配置
+ 
+我们对整篇文章做了整理,建议用如下的配置,首先是SSH服务端的配置,如下:
+####################################
+#仅使有Protocol 2
+#绑定到56000端口
+#绑定到内网IP
+####################################
+Protocol 2
+Port 56000
+ListenAddress 192.168.27.141
+ 
+ 
+ 
+####################################
+#以下两项配置仅用于Protocol 1
+####################################
+RhostsRSAAuthentication no
+RSAAuthentication no
+ 
+####################################
+#关闭Kerberos身份验证
+####################################
+kerberosauthentication no
+kerberosorlocalpasswd no
+kerberosticketcleanup yes
+ 
+####################################
+#关闭挑战/响应身份验证(s/key)
+####################################
+ChallengeResponseAuthentication no
+ 
+####################################
+#关闭GSSAPI身份验证
+####################################
+GSSAPIAuthentication no
+GSSAPICleanupCredentials yes
+ 
+####################################
+#关闭公/私钥身份验证
+####################################
+PubkeyAuthentication no
+AuthorizedKeysFile      .ssh/authorized_keys
+ 
+####################################
+#关闭基于主机的身份验证
+####################################
+HostbasedAuthentication no
+IgnoreUserKnownHosts yes
+IgnoreRhosts yes
+ 
+####################################
+#开启unix/password身份验证
+####################################
+PasswordAuthentication yes
+ 
+
+ 
+####################################
+#关闭X11转发
+#关闭除loopback外的其它网络接口转发
+#关闭tcp端口转发
+####################################
+X11Forwarding no
+GatewayPorts no
+AllowTcpForwarding no
+ 
+ 
+####################################
+#日志级别调整为VERBOSE,默认为INFO
+#日志Facility为AUTH
+####################################
+LogLevel VERBOSE
+SyslogFacility AUTH
+ 
+ 
+####################################
+#关闭SSH客户端与服务端的变量转递
+####################################
+AcceptEnv none
+# grep -E -i 'AcceptEnv' /etc/ssh/sshd_config 
+AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+AcceptEnv XMODIFIERS
+ 
+
+ 
+####################################
+#拒绝系统用户通过SSH登录  uid500以下的系统用户都设置了/sbin/nologin  不需要太担心
+####################################
+AllowUsers *
+DenyUsers daemon bin sys sync games man lp mail news uucp proxy www-data backup list irc gnats nobody Debian-exim statd identd sshd libuuid snmp
+ 
+[root@steven ~]# grep -E -i 'AllowUsers' /etc/ssh/sshd_config 
+[root@steven ~]# grep -E -i 'DenyUsers' /etc/ssh/sshd_config 
+ 
+
+####################################
+#登录警告信息
+#登录欢迎信息
+#关闭SSH的补丁版本号
+#关闭显示最后一次登录的信息
+####################################
+Banner /etc/issue
+PrintMotd yes
+ShowPatchLevel no
+PrintLastLog no
+ 
+####################################
+#指定支持的数据对称加密算法
+#指定支持的消息摘要算法
+####################################
+ciphers aes128-cbc,aes192-cbc,aes256-cbc,aes128-ctr,aes192-ctr,aes256-ctr,3des-cbc,arcfour128,arcfour256,arcfour,blowfish-cbc,cast128-cbc
+macs hmac-md5,hmac-sha1,umac-64@openssh.com,hmac-ripemd160,hmac-ripemd160@openssh.com,hmac-sha1-96,hmac-md5-96
+ 
+####################################
+#每300秒向客户端发送一次alive消息,判断是否存活,如两次均检测失败,则断开与客户端的连接
+#关闭tcpkeepalive
+####################################
+clientaliveinterval 300
+clientalivecountmax 2
+tcpkeepalive no
+# grep -E -i 'clientaliveinterval|clientalivecountmax|tcpkeepalive' /etc/ssh/sshd_config 
+#TCPKeepAlive yes
+#ClientAliveInterval 0
+#ClientAliveCountMax 3
+ 
+
+ 
+####################################
+#允许有1000次验证连接请求,如20秒不能完成校验,则断开验证连接请求
+#有三次密码验证机会
+####################################
+MaxStartups 1000
+LoginGraceTime 20
+MaxAuthTries 3
+ 
+# grep -E -i 'MaxStartups|LoginGraceTime|MaxAuthTries' /etc/ssh/sshd_config 
+#LoginGraceTime 2m
+#MaxAuthTries 6
+#MaxStartups 10:30:100
+ 
+
+ 
+####################################
+#支持压缩选项,从而提高数据通讯速度
+#关闭DNS反向解析,从而提高验证速度
+#支持PAM,从而支持可插入的安全模块,加载安全配置,如limit.conf等
+####################################
+Compression yes
+UseDNS no
+UsePAM yes
+#UsePAM no
+UsePAM yes
+#Compression delayed
+#UseDNS yes
+ 
+
+ 
+####################################
+#如其它用户有读取authorized.keys的权限,则拒绝连接
+#拒绝root用户登录
+#拒绝空口令的身份验证
+#用户验证时进程分离,ssh启用setuid切换到sshd用户启动验证进程
+#拒绝在SSH验证结束后使用/bin/login程序
+####################################
+strictmodes yes
+PermitRootLogin no
+PermitEmptyPasswords no
+UsePrivilegeSeparation yes
+UseLogin no
+ 
+####################################
+#支持sftp子系统
+####################################
+Subsystem sftp /usr/lib/openssh/sftp-server
+ 
+####################################
+#SSH的pid文件存放位置/var/run/
+####################################
+PidFile /var/run/sshd.pid
+# grep -E -i 'PidFile' /etc/ssh/sshd_config 
+#PidFile /var/run/sshd.pid
+ 
+
+ 
+####################################
+#主机的私钥存放位置
+####################################
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_dsa_key
+ 
+ 
+客户端
+下面是客户端的配置,如下:
+#######################################
+#针对所有主机的配置
+#######################################
+Host *
+ 
+#######################################
+#支持所有协议族
+#支持SSHv2/v1,优先使用SSHv2
+#ssh连接目标主机的22端口
+#######################################
+AddressFamily any
+Protocol 2,1
+Port 22
+ 
+ 
+#######################################
+#日志级别为VERBOSE
+#关闭批处理登录方式
+#防止DNS欺骗
+#不检查known_hosts中主机公钥的正确性
+#允许连接1024以下的端口
+#允许三次尝试密码登录
+#######################################
+LogLevel VERBOSE
+BatchMode no
+HashKnownHosts yes
+CheckHostIP yes
+StrictHostKeyChecking no
+NumberOfPasswordPrompts 3
+ 
+#######################################
+#仅使用hmac-md5做为消息摘要算法
+#仅使用arcfour(rc4)做为数据加密算法
+#######################################
+MACs hmac-md5
+Ciphers arcfour
+ 
+#######################################
+#仅在protocol 1使用
+#######################################
+RhostsRSAAuthentication no
+RSAAuthentication no
+ 
+ 
+#######################################
+#关闭挑战响应身份验证(s/key)
+#######################################
+ChallengeResponseAuthentication no
+ 
+#######################################
+#关闭基于主机的身份验证
+#######################################
+HostbasedAuthentication no
+EnableSSHKeysign no
+NoHostAuthenticationForLocalhost no
+ 
+#######################################
+#关闭GSSAPI身份验证
+#######################################
+GSSAPIAuthentication no
+GSSAPIDelegateCredentials no
+GSSAPIKeyExchange no
+GSSAPITrustDNS no
+ 
+#######################################
+#关闭公/私钥身份验证
+#######################################
+PubkeyAuthentication no
+ 
+#######################################
+#开启unix/password身份验证
+#######################################
+PasswordAuthentication yes
+ 
+#######################################
+#优先使用password身份验证
+#######################################
+PreferredAuthentications password
+ 
+ 
+#######################################
+#连接SSH服务端,发现timeout,3秒后强制断开连接
+#每300秒向SSH服务端发送1次alive消息
+#如果两次alive消息都没有到达目的主机则断开连接
+#因为使用serveraliveinterval,所以关闭tcpkiipalive
+#######################################
+ConnectTimeout 3
+serveraliveinterval 300
+serveralivecountmax 2
+tcpkeepalive no
+ 
+# grep -E -i 'ConnectTimeout |serveraliveinterval|serveralivecountmax |tcpkeepalive' /etc/ssh/ssh_config 
+#   ConnectTimeout 0
+ 
+
+ 
+#######################################
+#关闭对X11的端口转发
+#关闭除loopback外的其它网络接口转发
+#关闭转发代理
+#关闭ssh tunnel
+#######################################
+ForwardX11 no
+ForwardX11Trusted no
+GatewayPorts no
+ForwardAgent no
+tunnel no
+ 
+ 
+#######################################
+#开启压缩选项,级别为6
+#######################################
+Compression yes
+ 
+# grep -E -i 'Compression' /etc/ssh/ssh_config 
+[root@steven ~]# 
+ 
+
+ 
+#######################################
+#以下选项仅在protocol 1支持
+#######################################
+CompressionLevel 1
+ConnectionAttempts 1
+http://blog.chinaunix.net/uid-7235491-id-2061039.html
+ 
+特权分离(Privilege Separation)
+所谓特权分离(Privilege Separation)实际上是一种OpenSSH的安全机制，类似于chroot能够提供的安全性。这个特性是默认开启的，配置文件中的 UsePrivilegeSeparation 指令可以开启或关闭这个特性。
+使用此特性的关键之处在于设置一个空目录，并将此目录的权限设置为"000"，宿主设置为"root"。然后还需要设置一个用于特权分离的非特权用户，比如sshd，并将此用户的家目录设置为这个空目录。比如可以使用下面这样的命令：
+# mkdir -p /var/empty
+# chown 0:0 /var/empty
+# chmod 000 /var/empty
+# groupadd sshd
+# useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
+然后在运行配置脚本的时候，使用
+--with-privsep-path=/var/empty
+--with-privsep-user=sshd
+来指定目录和用户。
