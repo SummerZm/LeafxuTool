@@ -1,0 +1,48 @@
+1. 设置断点(breakPoint), 观察点(watchPoint), 捕捉点(catchPoint)
+    A. break <function>
+        ---> 在进入指定函数时停住。C++中可以使用class::function或function(type,type)格式来指定函数名。 
+     
+    B. break <linenum>
+        ---> 在指定行号停住。
+
+    C. break +offset  break -offset 
+        ---> 在当前行号的前面或后面的offset行停住。offiset为自然数。
+        
+    D. break filename:linenum 
+        ---> 在源文件filename的linenum行处停住。
+
+    E. break filename:function 
+        ---> 在源文件filename的function函数的入口处停住。
+
+    F. break *address
+        ---> 在程序运行的内存地址处停住。
+        ---> eg: (gdb) break *0x00ddff233
+    
+    G. break 
+        ---> break命令没有参数时，表示在下一条指令处停住。
+
+    H. break ... if <condition>
+        ---> 可以是上述的参数，condition表示条件，在条件成立时停住。
+        ---> 比如在循环境体中，可以设置break if i=100，表示当i为100时停住程序。
+
+    I. 查看断点时，可使用info命令，如下所示：（注：n表示断点号）
+        ---> info breakpoints [n] 
+        --->  info break [n] 
+
+2. 查看调试信息
+    A. 查看传入参数
+        ---> (gdb) info args
+
+    B. 查看局部变量
+        ---> (gdb) info locals
+
+    C. 查看栈帧
+        a. 详细栈帧信息: (gdb) info frame
+        b. 简单栈帧信息: (gdb) frame
+        c. 跳到上一个栈帧: (gdb) up 1
+        d. 跳到下一个栈帧: (gdb) down 1
+                                                                                                                    
+2. other
+    A. 显示linespec对应的汇编地址范围: info line linespeca  eg: info line 20
+    B. 显示address地址对应的源码位置: info line *address    eg: info line *0x400537
+

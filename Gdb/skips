@@ -1,0 +1,29 @@
+1. 源码查看
+    A. 设置获取源代码显示数量
+        a. set listsize count 
+            ---> eg: set listsize 100
+        b. show listsize 
+
+    B. 查看源码
+        a. 行号查看源码：list numline  eg: list 100
+        b. 函数查看源码：list function eg: list main
+        c. 地址查看源码：list address  eg: list 0x00006608 
+
+    C. 搜索源码
+        a. search regexp: 当前行下一行，向下搜索
+        b. rev regexp: 当前行上一行，向上搜索
+
+    D. 查看机器码
+        a. 显示linespec对应的汇编地址范围: info line linespeca  eg: info line 20
+        b. 显示address地址对应的源码位置: info line *address    eg: info line *0x400537
+        c. disassemble
+            ---> disassemble 显示当前位置汇编代码
+            ---> disassemble start end  显示start end之间h汇编代码
+            ---> disassemble address 显示address的汇编代码
+            ---> disassemble start +length  显示start  start+length之间的汇编代码
+            ---> disassemble func 显示函数的汇编代码
+            ---> 这台centos上仅仅 disassemble func 有用。。。
+
+2. 源码路径
+    A. 查看源码路径:  show dirctories
+    B. 设置源码路径(空格隔开列表):  set dirctories path-list  eg: set dirctories /home/summer /usr/local/

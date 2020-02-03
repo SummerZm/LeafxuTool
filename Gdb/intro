@@ -1,0 +1,37 @@
+1. gdb调试环境 
+    A. 命令行输入 gdb
+    B. (gdb)表示已经在gdb调试环境.
+
+2. gdb调试环境中运行shell命令
+    A. 运行命令 eg: (gdb) shell ls -la
+
+3. gdb调试环境中运行程序
+    A. 命令行模式下运行gdb <program> eg: gdb prime  
+        a. [list/l] gdb以此方式运行后会检查,PATH和当前目录下的源文件代码。
+            ---> 可查看是否有源码文件加载进来 (gdb) l 
+        
+        b. [run/r] 运行程序
+            ---> (gdb) r
+
+        c. [set/show] gdb调试环境的设置和查看命令 
+            ---> 设置程序运行参数: (gdb) set args 10 
+            ---> 查看程序运行参数: (gdb) show args 
+            ---> 设置环境变量: (gdb) set environment mypath=/home/summer/
+            ---> 查看程序运行参数: (gdb) show environment mypath
+            ---> cd <dir> 跳转目录
+            ---> pwd 查看当前路径
+            ---> tab可以在gdb运行环境补全命令
+
+        d. [info] gdb查看程序信息
+            ---> 看程序暂停原因: (gdb) info terminal
+            ---> 看程序栈信息: (gdb) info stack
+            ---> 看程序函数列表: (gdb) info function
+
+        e. 重定向程序输出 
+            ---> 运行程序并将程序输出重定向到logfile run > logfile
+
+4. gdb调试以运行的程序
+    A. 使用ps,查看程序的pid. 命令行模式运行: gdb <program> pid
+    B. 使用gdb <program>, 关联上代码，然后在gdb中使用 attach/detach pid  连接或分离进程
+
+5. 程序编译时加入-g选项,将源代码文件信息编译到可执行文件中; 否则只能看到汇编信息.
