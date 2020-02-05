@@ -1,0 +1,8 @@
+Screen基本操作
+1. 创建会话 : screen -S screenName
+2. 离开会话 : screen -d screenName
+3. 进入会话 : screen -r screenName
+4. 查看会话 : screen -ls
+5. 删除废会话: screen -wipe  [注: 一般是 dead 状态的会话]
+6. 恢复离线作业: screen -x	 [注: 一般是 attached 状态时使用]
+7. 例子: screen vi /tmp/david.txt
