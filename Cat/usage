@@ -1,0 +1,19 @@
+1. 清空文件内容
+	cat /dev/null > file
+
+2. 交互式输入文件(可在shell中使用)
+	开始: cat << END-flag >> file
+	结束: END-flag
+	ex: 
+	  cat << end >> file	
+	  > $PATH
+	  > end
+	(在shell中执行将当前shell的环境变量写入file文件； '>' 是交互标识符)
+
+3. 合并文件
+	cat file1 file2 > file
+
+4. 相关参数
+	-n 显示行号
+	-b 对空白行不编号
+	-s 连续两个以上的空白行只显示一行
