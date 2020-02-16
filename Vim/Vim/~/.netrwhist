@@ -1,0 +1,10 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =8
+let g:netrw_dirhist_1='/work/projects/lonbon_httpd'
+let g:netrw_dirhist_2='/work/projects/lonbon_httpd/src'
+let g:netrw_dirhist_3='/work/projects/lonbon_httpd'
+let g:netrw_dirhist_4='/work/projects/lonbon_httpd/src'
+let g:netrw_dirhist_5='/work/projects/lonbon_httpd'
+let g:netrw_dirhist_6='/work/projects/lonbon_httpd/src'
+let g:netrw_dirhist_7='/work/projects/lonbon_httpd'
+let g:netrw_dirhist_8='/work/projects'
