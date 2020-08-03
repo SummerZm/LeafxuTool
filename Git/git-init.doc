@@ -9,8 +9,15 @@
     c. 实际上，没有.git目录。.git目录的内容被放到项目根目录下
     d. 只保存git历史提交的版本信息，而不允许用户在上面进行各种git操作
     
-
 2. git on ssh
 	a. 创建git用户.
 	b. 使用git创建git仓库.
 	c. 配置公密钥对
+
+3. git export
+    a. git init
+    b. git add README.md
+    c. git commit -m "first commit"
+    d. git remote add origin git@github.com:SummerZm/test.git
+    e. git push -u origin master
+    f. 在Git上创建仓库时不要选择生成Readme.md

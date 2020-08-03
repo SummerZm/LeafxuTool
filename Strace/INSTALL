@@ -1,0 +1,15 @@
+1. tar -jxv -f strace-4.5.20.tar.bz2
+2. ./configure --host=arm-linux CC=arm-linux-gcc LD=arm-linux-ld . 配置makefile
+3. make CFLAGS="-static" . 生成静态可执行文件
+4. (可选) arm-linux-strip strace. 缩减strace的size
+
+补充: [只有configure.ac 和 Makefile.am]
+1. aclocal
+2. autoconfig
+3. autoheader
+4. automake --add-missing  or autoreconf -if [autoreconf is better]
+5. ./configure --xxx
+6. make
+7. make install
+
+[注:  autoreconf -if will rebuild everything from stcratch and can fix: error HAVE_M32_RUNTIME does not appear in AM_CONDITIONAL]
