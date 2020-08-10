@@ -1,0 +1,66 @@
+## 编译Tcpdump 
+
+链接1: https://github.com/the-tcpdump-group/libpcap.git
+链接2: https://github.com/the-tcpdump-group/tcpdump.git 
+
+### 方法1
+1. tar -jxv -f libpcap-1.5.3.tar.gz
+2. ./configure --host=arm-linux --with-pcap=linux --prefix=/work/tool/tcpdump/tools/ ac_cv_linux_vers=2
+3. make && make install
+
+4. tar -jxv -f tcpdump-4.5.1.tar.gz
+5. ./configure --prefix=/work/tool/tcpdump/tools --host=arm-linux --target=arm-linux 
+    CC=arm-linux-gcc 
+    ac_cv_linux_vers=2 
+    CFLAGS='-I/work/tool/tcpdump/tools/include -static'
+    LDFLAGS='-L/work/tool/tcpdump/tools/lib/'
+
+6. make && make install
+
+### 方法2
+1. 准备好libpcap-1.1.0版源码
+2. 编译libpcap-1.1.0 会遇到的问题
+    a. CPU架构识别问题
+    ```sh
+    # ./configure
+    # checking host system type… Invalid configuration `x86_64-pc-linux-gnuoldld’: machine `x86_64-pc’ not recognized
+    # configure: warning: apparently your OS is not officially supported yet
+    # configure: warning: this may not work
+    # you’ll have to edit the makefile by hand
+
+
+    Solution:
+    edit file config.sub, add “x86_64-*” here:
+
+    # Decode aliases for certain CPU-COMPANY combinations.
+    case $basic_machine in
+
+    # Recognize the basic CPU types with company name.
+    vax-* | tahoe-* | i[3456]86-* | x86_64-* | i860-* | m68k-* | m68000-* | m88k-*
+    ```
+    b. configure 测试脚本检测问题
+    ```
+    # 注释Configure脚本中一下代码,使Configure检测得以通过:
+
+ 	# if test $ac_cv_linux_vers = unknown ; then
+ 	#	{ { echo "$as_me:$LINENO: error: cannot determine linux version when cross-compiling" >&5
+    #       echo "$as_me: error: cannot determine linux version when cross-compiling" >&2;}
+    #   { (exit 1); exit 1; }; }
+    # fi
+
+    
+    # if test -z "$with_pcap" && test "$cross_compiling" = yes; then
+    #	{ { echo "$as_me:$LINENO: error: pcap type not determined when cross-compiling; use --with-pcap=..." >&5
+    #       echo "$as_me: error: pcap type not determined when cross-compiling; use --with-pcap=..." >&2;}
+    #   { (exit 1); exit 1; }; }
+    # fi
+
+    ```
+3. 其余参照方法1
+    
+### 相关命令   
+1. git clone url
+2. git tag
+3. git checkout -b libpcap-1.0.0
+
+

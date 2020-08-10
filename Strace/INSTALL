@@ -13,3 +13,5 @@
 7. make install
 
 [注:  autoreconf -if will rebuild everything from stcratch and can fix: error HAVE_M32_RUNTIME does not appear in AM_CONDITIONAL]
+
+
