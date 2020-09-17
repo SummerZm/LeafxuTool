@@ -25,6 +25,6 @@
 |Wireshark|Network packetage capture tool.|
 |Winscp|Remote login gui tool.|
 |Busybox|Arm busybox.|
-
+|Xargs|A Shell tool of unix to connect a Shell-Pipe-Command.|
 
 
