@@ -1,0 +1,937 @@
+[22:55.01.656]  - MobaXterm version: 9.4 Beta 0
+[22:55.01.657]  - Command line: "J:\MobaXterm.9.4\crack\MobaXterm.exe"
+[22:55.01.658]  - Win32 version: 6.3.2.9600.
+[22:55.01.658]  - CurDir: J:\MobaXterm.9.4\crack\
+[22:55.01.658]  - PersonalDir: C:\Users\Summer\DOCUME~1\
+[22:55.01.658]  - AppDataDir: C:\Users\Summer\AppData\Roaming\
+[22:55.01.658]  - LocalAppDataDir: C:\Users\Summer\AppData\Roaming\
+[22:55.01.659]  - DesktopDir: C:\Users\Summer\Desktop\
+[22:55.01.659]  - MobaProfileDir: C:\Users\Summer\DOCUME~1\
+[22:55.01.659]  - Free space in MobaProfileDir folder: 42738MB
+[22:55.01.659]  - TempDir: C:\Users\Summer\AppData\Local\Temp\
+[22:55.01.660]  - Free space in TempDir folder: 42738MB
+[22:55.01.661]  - Monitor #0: 1920x1080
+[22:55.01.661]  - User name: Summer
+[22:55.01.662]  - Computer name: DESKTOP-A2N330R
+[22:55.01.662]  - CygUtils: J:\MobaXterm.9.4\crack\CygUtils.plugin
+[22:55.01.662]  - Uptime: 28 days, 06:29:27
+[22:55.01.662]  - Windows PATH: C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;D:\Development Files\Git\cmd;C:\WINDOWS\System32\OpenSSH\;D:\Program Files\calibre\;C:\Users\Summer\AppData\Local\Microsoft\WindowsApps;D:\Development Files\IntelliJ IDEA Community Edition 2019.2\bin;C:\Users\Summer\AppData\Local\BypassRuntm
+[22:55.01.662]  
+[22:55.01.663]  BEGIN Form1.FormCreate
+[22:55.01.663]      Detecting installed/portable version
+[22:55.01.663]      --> portable version
+[22:55.01.663]      
+[22:55.01.663]      Detecting IniSettings
+[22:55.01.664]      An existing INI file has been detected in "C:\Users\Summer\DOCUME~1\MobaXterm\MobaXterm.ini".
+[22:55.01.664]      MobaXterm will use this path for INI file.
+[22:55.01.664]      MobaXterm will take its configuration from file "C:\Users\Summer\DOCUME~1\MobaXterm\MobaXterm.ini".
+[22:55.01.665]      (selected ini file seems to be writeable)
+[22:55.01.665]      --> IniSettings= C:\Users\Summer\DOCUME~1\MobaXterm\MobaXterm.ini
+[22:55.01.665]      
+[22:55.01.665]      Detecting MobaXVTDir
+[22:55.01.666]      BEGIN IsFolderRW(C:\Users\Summer\AppData\Local\Temp\Mxt94)
+[22:55.01.669]          CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\drives, C:\Users\Summer\AppData\Local\Temp\Mxt94\cygdrive);
+[22:55.01.672]          CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\drives, C:\Users\Summer\AppData\Local\Temp\Mxt94\mnt);
+[22:55.01.674]          CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\drives, C:\Users\Summer\AppData\Local\Temp\Mxt94\media);
+[22:55.01.677]          CreerLienSymbolique(/proc/registry, C:\Users\Summer\AppData\Local\Temp\Mxt94\registry);
+[22:55.01.686]      END IsFolderRW(C:\Users\Summer\AppData\Local\Temp\Mxt94) --> OK
+[22:55.01.686]      --> MobaXVTDir= C:\Users\Summer\AppData\Local\Temp\Mxt94
+[22:55.01.687]      
+[22:55.01.687]      Detecting BinExeDir
+[22:55.01.687]      --> BinExeDir= C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\
+[22:55.01.687]      --> SessionsDir= C:\Users\Summer\AppData\Local\Temp\Mxt94\tmp\sessions
+[22:55.01.687]      
+[22:55.01.687]      Detecting MobaXVTHomeDir
+[22:55.01.688]      --> MobaXVTHomeDir= C:\Users\Summer\AppData\Local\Temp\Mxt94\tmp\home_Summer
+[22:55.01.688]      
+[22:55.01.688]      Skin detection
+[22:55.01.688]      Skin selected: MetroUI
+[22:55.01.688]      Set Application Title
+[22:55.01.690]      
+[22:55.01.690]      
+[22:55.01.690]      BEGIN LireCustomization
+[22:55.01.691]          
+[22:55.01.691]          [Customization]  Surcharging INI file with C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\custom.settings.ini
+[22:55.01.691]          [Customization]  Reading Custom INI file "C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\custom.settings.ini"
+[22:55.01.691]          
+[22:55.01.692]          
+[22:55.01.693]          [Customization]  NOCYG = false
+[22:55.01.694]          [Customization]  NOGAME = true
+[22:55.01.694]          [Customization]  NOPINGUS = true
+[22:55.01.694]          [Customization]  NOMACROS = false
+[22:55.01.694]          [Customization]  NOTOOLS = false
+[22:55.01.694]          [Customization]  FORCEACESSCONTROL = false
+[22:55.01.695]          [Customization]  NOSETTING = false
+[22:55.01.695]          [Customization]  NOPASSWORD = false
+[22:55.01.695]          [Customization]  NOPASSPHRASECACHING = false
+[22:55.01.695]          [Customization]  NOSESSION = false
+[22:55.01.695]          [Customization]  NORSH = false
+[22:55.01.695]          [Customization]  NOTELNET = false
+[22:55.01.695]          [Customization]  NOFTP = false
+[22:55.01.696]          [Customization]  NOVNC = false
+[22:55.01.696]          [Customization]  NORDP = false
+[22:55.01.696]          [Customization]  NOXDMCP = false
+[22:55.01.696]          [Customization]  SHOWPASS = true
+[22:55.01.696]          [Customization]  NOSERVERS = false
+[22:55.01.696]          [Customization]  NOTFTPSERV = false
+[22:55.01.696]          [Customization]  NOHTTPSERV = false
+[22:55.01.696]          [Customization]  NOSSHSERV = false
+[22:55.01.696]          [Customization]  NOTELNETSERV = false
+[22:55.01.696]          [Customization]  NONFSSERV = false
+[22:55.01.697]          [Customization]  NOVNCSERV = false
+[22:55.01.697]          [Customization]  NOTCPCAPTURE = false
+[22:55.01.697]          [Customization]  NONETSCAN = false
+[22:55.01.697]          [Customization]  FORCEMASTERPASSWORD = false
+[22:55.01.697]          [Customization]  NOMOBASSHTUNNEL = false
+[22:55.01.697]          
+[22:55.01.698]      END LireCustomization
+[22:55.01.698]      
+[22:55.01.698]      
+[22:55.01.698]      Skin selected: MetroUI
+[22:55.01.698]      Registered to  ( users)
+[22:55.01.698]      Skin selected: MetroUI
+[22:55.01.715]      BEGIN AddMobaConsoleFont
+[22:55.01.716]      END AddMobaConsoleFont
+[22:55.01.716]  END Form1.Create
+[22:55.01.716]  
+[22:55.01.716]  CREATION Form4
+[22:55.01.721]  BEGIN WMSize
+[22:55.01.721]  END WMSize
+[22:55.01.837]  BEGIN WMSize
+[22:55.01.837]  END WMSize
+[22:55.01.868]  BEGIN Form4.Create
+[22:55.01.924]      NbPingus = 4
+[22:55.01.928]      BEGIN LoadBookmarksFromIni
+[22:55.01.929]          FindOrCreateTreeFolders() (1)
+[22:55.01.941]          BEGIN RecreerLesMenusDeBookmarks
+[22:55.01.941]              RecreerLesMenusDeBookmarks: FreeerLesBookmarksMenuItems(Form1.Xserver3)
+[22:55.01.941]              RecreerLesMenusDeBookmarks: FreeerLesBookmarksMenuItems(Bookmarks1)
+[22:55.01.941]              sTreeView1.assign(Treesessions)
+[22:55.01.946]              Calcul SheetSessions
+[22:55.01.947]              CreerSessionMenuItems
+[22:55.01.953]              CreerAliases
+[22:55.01.956]              TreeSessions.Expand
+[22:55.01.956]          END RecreerLesMenusDeBookmarks
+[22:55.01.956]      END LoadBookmarksFromIni
+[22:55.01.956]      BEGIN LoadMacrosFromIni
+[22:55.01.956]      END LoadMacrosFromIni
+[22:55.01.958]      Form4Create1
+[22:55.01.958]      Form4Create2
+[22:55.01.964]      BEGIN AdapterFlechesDeLaSidebar
+[22:55.01.965]      END AdapterFlechesDeLaSidebar
+[22:55.01.966]      Form4Create3
+[22:55.01.967]      GetMinWidth = 1085
+[22:55.01.967]      GetMinHeight = 608
+[22:55.01.968]      BEGIN WMSize
+[22:55.01.968]      END WMSize
+[22:55.01.968]      BEGIN WMSize
+[22:55.01.970]      END WMSize
+[22:55.01.970]      Form4Create4
+[22:55.01.970]      IsNTFS(C:\) --> NTFS
+[22:55.01.970]      Slash drive is NTFS.
+[22:55.01.970]      Form4Create5
+[22:55.01.971]      Form4Create6
+[22:55.01.971]      Displaysidebarontheleft1Click: FormClick
+[22:55.01.974]      BEGIN AdapterFlechesDeLaSidebar
+[22:55.01.975]      END AdapterFlechesDeLaSidebar
+[22:55.01.975]      Form4Create7
+[22:55.01.975]      Form4Create8
+[22:55.01.975]      Form4Create9
+[22:55.01.975]      ShowButtonsbar1Click: FormClick
+[22:55.01.977]      Form4Create10
+[22:55.01.977]      Form4Create11
+[22:55.01.978]      Form4Create12
+[22:55.01.978]      SmallButtons1Click: FormClick
+[22:55.01.979]      GetMinWidth = 1085
+[22:55.01.979]      GetMinHeight = 552
+[22:55.01.979]      Form4Create13
+[22:55.01.979]      Form4Create14
+[22:55.01.979]  END Form4.Create
+[22:55.01.979]  
+[22:55.01.979]  CREATION FormParams
+[22:55.02.324]  BEGIN TFormParams.FormCreate
+[22:55.02.352]  END TFormParams.FormCreate
+[22:55.02.352]  
+[22:55.02.352]  CREATION FormSessionEdit
+[22:55.02.865]  BEGIN FormSessionEdit.Create
+[22:55.02.941]      BEGIN TFormSessionEdit.FindIP
+[22:55.02.967]      END TFormSessionEdit.FindIP
+[22:55.02.967]      BEGIN SetupEnumAvailableComPorts
+[22:55.02.968]          SetupEnumAvailableComPorts: SetupDiClassGuidsFromName
+[22:55.02.971]          SetupEnumAvailableComPorts: SetupDiGetClassDevs
+[22:55.02.978]          SetupEnumAvailableComPorts: SetupDiEnumDeviceInfo
+[22:55.02.978]          SetupEnumAvailableComPorts: SetupDiDestroyDeviceInfoList
+[22:55.02.979]      END SetupEnumAvailableComPorts
+[22:55.02.984]  END FormSessionEdit.Create
+[22:55.02.984]  
+[22:55.02.984]  CREATION FormIconChooser
+[22:55.02.988]  BEGIN FormIconChooser.Create
+[22:55.02.988]  END FormIconChooser.Create
+[22:55.02.988]  
+[22:55.02.988]  CREATION FormBookFolderEdit
+[22:55.02.993]  BEGIN FormBookFolderEdit.Create
+[22:55.02.993]  END FormBookFolderEdit.Create
+[22:55.02.993]  
+[22:55.02.993]  CREATION FormAbout
+[22:55.03.043]  BEGIN FormAbout.Create
+[22:55.03.044]  END FormAbout.Create
+[22:55.03.044]  
+[22:55.03.044]  CREATION FormTransparente
+[22:55.03.055]  
+[22:55.03.055]  CREATION FormQuickShow
+[22:55.03.066]  BEGIN TFormQuickShow.FormCreate
+[22:55.03.066]  END TFormQuickShow.FormCreate
+[22:55.03.066]  
+[22:55.03.066]  CREATION FormNetscan
+[22:55.03.115]  
+[22:55.03.115]  CREATION FormNetstat
+[22:55.03.119]  BEGIN FormNetstat.Create
+[22:55.03.119]  END FormNetstat.Create
+[22:55.03.119]  
+[22:55.03.119]  CREATION FormPortForwarding
+[22:55.03.341]  BEGIN TFormPortForwarding.FormCreate
+[22:55.03.341]  END TFormPortForwarding.FormCreate
+[22:55.03.341]  
+[22:55.03.341]  CREATION FormPortForwardingEdit
+[22:55.03.364]  
+[22:55.03.364]  CREATION FormDesktopShortcut
+[22:55.03.370]  
+[22:55.03.370]  CREATION FormImportExport
+[22:55.03.376]  
+[22:55.03.376]  CREATION FormHotKeys
+[22:55.03.419]  BEGIN TFormHotKeys.FormCreate
+[22:55.03.421]  END TFormHotKeys.FormCreate
+[22:55.03.421]  
+[22:55.03.421]  CREATION FormKeyboard
+[22:55.03.434]  
+[22:55.03.434]  CREATION FormDownloadBloquant
+[22:55.03.442]  
+[22:55.03.442]  CREATION FormStorePasswords
+[22:55.03.457]  
+[22:55.03.457]  CREATION FormInputDialog
+[22:55.03.466]  
+[22:55.03.466]  CREATION FormRemoteSave
+[22:55.03.472]  
+[22:55.03.472]  CREATION FormSaveTerm
+[22:55.03.484]  
+[22:55.03.484]  CREATION FormChooseComPort
+[22:55.03.489]  
+[22:55.03.489]  CREATION FormServices
+[22:55.03.609]  
+[22:55.03.609]  CREATION FormMsgDialog
+[22:55.03.616]  
+[22:55.03.616]  CREATION FormColorsSelector
+[22:55.03.640]  
+[22:55.03.640]  CREATION FormSyntax
+[22:55.03.656]  
+[22:55.03.656]  CREATION FormChmod
+[22:55.03.665]  
+[22:55.03.665]  CREATION FormCygUtilsMsg
+[22:55.03.672]  
+[22:55.03.672]  CREATION FormMobApt
+[22:55.03.683]  
+[22:55.03.683]  CREATION FormTwitter
+[22:55.03.689]  
+[22:55.03.689]  CREATION FormMasterPassword
+[22:55.03.699]  
+[22:55.03.699]  CREATION FormTermConfirmClose
+[22:55.03.705]  
+[22:55.03.705]  CREATION FormManagePasswords
+[22:55.03.716]  BEGIN TFormManagePasswords.FormCreate
+[22:55.03.716]  END TFormManagePasswords.FormCreate
+[22:55.03.716]  
+[22:55.03.716]  CREATION FormManageMacros
+[22:55.03.748]  
+[22:55.03.748]  CREATION FormEditMacroLine
+[22:55.03.763]  
+[22:55.03.763]  CREATION FormFindInTerm
+[22:55.03.768]  
+[22:55.03.768]  CREATION FormDetachedTab
+[22:55.03.773]  BEGIN TFormDetachedTab.FormResize
+[22:55.03.775]      
+[22:55.03.775]      FIN CREATION FORMS
+[22:55.03.775]      
+[22:55.03.777]      BEGIN Form1.Show
+[22:55.03.777]      END Form1.Show
+[22:55.03.809]      
+[22:55.03.809]      Launching Form1.Timer1Timer
+[22:55.03.809]  
+[22:55.03.809]  
+[22:55.03.809]  
+[22:55.03.809]  
+[22:55.03.810]  ================================================================================
+[22:55.03.810]  ~    INI file content (C:\Users\Summer\DOCUME~1\MobaXterm\MobaXterm.ini)    ~
+[22:55.03.810]  ================================================================================
+[22:55.03.810]  
+[22:55.03.810]  
+[Font]
+Font2=MobaFont
+FontIsBold2=0
+FontHeight2=12
+FontCharset2=0
+FontQuality2=3
+Charset2=UTF-8
+
+[Cursor]
+CursorType=0
+CursorBlinks=0
+
+[Misc]
+DefTextEditor=<MobaTextEditor>
+PasswordsInRegistry=0
+StorePasswords=Always
+StoreSSHKeysPassphrases=0
+BackupIni=1
+LogTerminalActivity=0
+LogType=0
+LogFolder=
+SkinName2=MetroUI
+SkinSat=64
+XAuto=1
+XKeepAlive=1
+UseFontServer=0
+BackspaceSendsBS=1
+BSisBS=1
+BoldAsFont=0
+WinPath=0
+ConfirmExit=1
+RightClickAction=0
+Scrollbar=1
+SeparationLine=1
+TrackTermActivity=1
+BellType=0
+FSHost=localhost
+FSPort=7100
+TransTerm=0
+TransDetachedTabs=0
+X11SharedClipboard2=1
+X11OpenGL=0
+X11MultiMonitors2=1
+X11DisplayMode=0
+X11AccessControl2=0
+X11Engine=0
+X11DisplayOffset=0
+X11ScreenNumber=1
+X11Keyboard=0
+X11Version=MobaX
+HomeDir=<Temp directory>
+SlashDir=<Temp directory>
+DefaultHome=<Home>
+DefaultNewTab=<Home>
+ReplaceHomeTab=1
+NoTabClose=0
+LastSession=www.leafxu.top (root)|#109#0%www.leafxu.top%22%root%%-1%-1%%%22%%0%0%Interactive shell%%%-1%0%0%0%%1080%%0%0#MobaFont%12%0%0%0%15%236,236,236%0,0,0%180,180,192%0%-1%0%%xterm%-1%0%0,0,0%54,54,54%255,96,96%255,128,128%96,255,96%128,255,128%255,255,54%255,255,128%96,96,255%128,128,255%255,54,255%255,128,255%54,255,255%128,255,255%236,236,236%255,255,255%80%24%0%1%-1%<none>%%0#0#
+SessionP=5271421839308
+PuTTYSessionsAlreadyImported=1
+SCRTSessionsAlreadyImported=1
+TermSaveToTxt=0
+
+[SSH]
+AutoStartOpenSSHAgentDep2=0
+UseInternalMobAgent=0
+UseExternalPageant=1
+ForwardSSHAgentDep=1
+MobAgentKeys=
+SSHCompression=1
+X11Forwarding=1
+DisplaySSHBanner=1
+StrippedDownAlgoList2=1
+GwUse2factor=0
+AutoStartSSHGUI=0
+SSHKeepAlive2=0
+EnableSFTP=1
+UseGSSAPI=1
+KrbDomain=
+GSSAPICustomLib=
+GSSAPILibNumber=0
+DefaultLoginName=
+SFTPShowDotFiles=1
+SFTPAsciiMode=0
+BrowserSortType=0
+BrowserSortReverse=0
+
+[Display]
+DisableQuickConnect=0
+FlickerFree=0
+SidebarRight=0
+C10Checked=1
+C11Checked=1
+C12Checked=1
+C13Checked=0
+C14Checked=0
+VisibleTabNum=1
+VisibleTabClose=1
+MenuAndButtons=0
+BtnType2=2
+
+[X11Extension]
+Composite=1
+DAMAGE=1
+RANDR=1
+XFIXES=1
+XTEST=1
+XINERAMA=1
+
+[Macros]
+Macro 01=258:100:2097153:d|258:100:2097153:d|258:100:2097153:d|258:13:1835009:RETURN|0:0:0:SLEEPEQUAL1200|
+11=
+ll=
+Macro 02=258:108:2490369:l|258:115:2031617:s|258:32:3735553:SPACE|258:45:786433:-|258:108:2490369:l|258:97:1966081:a|258:13:1835009:RETURN|0:0:0:SLEEPEQUAL1200|
+1111=
+
+[MacrosHotkeys]
+Macro 01=0
+11=0
+ll=0
+Macro 02=0
+1111=0
+
+[WindowPos_OFFEN-PC_1_1920]
+CompactMode=0
+MonitorCount=1
+Left=0
+Top=0
+Width=1936
+Height=1056
+Maximized=1
+SidebarVisible=1
+SidebarWidth=240
+
+[Recently started]
+16=47.191.213.12 (summer)
+15=192.168.1.101 (root)
+14=192.168.1.103 (summer)
+13=192.168.1.103 (root)
+12=192.168.1.104 (summer)
+11=47.91.213.12 (summer)
+10=47.74.134.70 (leafxu)
+9=192.168.1.102 (summer)
+8=192.168.1.110 (summer)
+7=www.leafxu.top
+6=47.74.134.70 (Leafxu)
+5=47.74.134.70 (Leafxu) (1)
+4=47.74.134.70 (root)
+3=47.74.134.70 (root) (1)
+2=47.91.213.12 (summer) (1)
+1=www.leafxu.top (root)
+
+[TopToolbarBtns]
+Btn0=Session
+Btn1=Servers
+Btn2=Tools
+Btn3=Sessions
+Btn4=View
+Btn5=Split
+Btn6=MultiExec
+Btn7=Tunneling
+Btn8=Packages
+Btn9=TextEdit
+Btn10=Calculator
+Btn11=PicView
+Btn12=Settings
+Btn13=Help
+Btn14=X server
+Btn15=Exit
+
+[HotKeys]
+Paste in terminal=Ctrl + Shift + V
+
+[Services]
+TFTPRootDir=_MyDocuments_\
+TFTPCheck1=1
+TFTPCheck2=1
+SpinTFTPPort=69
+SpinTFTPTimeout=3600
+CheckTFTPTimeout=1
+FTPRootDir=_MyDocuments_\
+SpinFTPPort=21
+FTPLogin=mobaxterm
+FTPPass=
+FTPCheck1=1
+FTPCheck2=0
+FTPCheck3=0
+SpinFTPTimeout=3600
+CheckFTPTimeout=1
+HTTPRootDir=_MyDocuments_\
+HTTPCheck1=1
+HTTPCheck2=0
+SpinHTTPPort=80
+SpinHTTPTimeout=3600
+CheckHTTPTimeout=1
+SpinSSHPort=22
+CheckSSHTimeout=1
+SpinSSHTimeout=3600
+SpinTelnetPort=23
+CheckTelnetTimeout=1
+SpinTelnetTimeout=3600
+CheckNFSTimeout=1
+SpinNFSTimeout=3600
+CheckVNCTimeout=1
+SpinVNCTimeout=3600
+sEdit1=
+SpinVNCPort=5900
+SpinVNCHTTPPort=5800
+SpinCronTimeout=3600
+CheckCronTimeout=1
+StartCronAtStartup=0
+CheckIperfTimeout=1
+SpinIperfTimeout=3600
+sSpinEdit3=80
+CheckRsyncTimeout=1
+SpinRsyncTimeout=3600
+sDirectoryEdit2=
+
+[WindowPos_SUMMER-PC_1_1920]
+CompactMode=0
+MonitorCount=1
+Left=437
+Top=236
+Width=1045
+Height=607
+Maximized=0
+SidebarVisible=1
+SidebarWidth=200
+
+[EditorWindowPos]
+Left=-8
+Top=-8
+Width=1936
+Height=1056
+Maximized=1
+
+[WindowPos_LAPTOP-B7PIO1M2_1_1920]
+CompactMode=0
+MonitorCount=1
+Left=519
+Top=236
+Width=881
+Height=608
+Maximized=0
+SidebarVisible=0
+SidebarWidth=263
+
+[WindowPos_DESKTOP-A2N330R_1_1920]
+CompactMode=0
+MonitorCount=1
+Left=417
+Top=236
+Width=1085
+Height=608
+Maximized=0
+SidebarVisible=1
+SidebarWidth=240
+
+[WindowPos_DESKTOP-A2N330R_2_1920]
+CompactMode=0
+MonitorCount=2
+Left=0
+Top=0
+Width=1936
+Height=1056
+Maximized=1
+SidebarVisible=1
+SidebarWidth=240
+
+[Bookmarks]
+SubRep=
+ImgNum=41
+192.168.1.101 (root)=#109#0%192.168.1.101%22%root%%-1%-1%%%22%%0%0%Interactive shell%%%-1%0%0%0%%1080%%0%0#MobaFont%12%0%0%0%15%236,236,236%0,0,0%180,180,192%0%-1%0%%xterm%-1%0%0,0,0%54,54,54%255,96,96%255,128,128%96,255,96%128,255,128%255,255,54%255,255,128%96,96,255%128,128,255%255,54,255%255,128,255%54,255,255%128,255,255%236,236,236%255,255,255%80%24%0%1%-1%<none>%%0#0#
+192.168.1.102 (summer)=#109#0%192.168.1.102%22%summer%%-1%-1%%%22%%0%0%Interactive shell%%%-1%0%0%0%%1080%%0%0#MobaFont%12%0%0%0%15%236,236,236%0,0,0%180,180,192%0%-1%0%%xterm%-1%0%0,0,0%54,54,54%255,96,96%255,128,128%96,255,96%128,255,128%255,255,54%255,255,128%96,96,255%128,128,255%255,54,255%255,128,255%54,255,255%128,255,255%236,236,236%255,255,255%80%24%0%1%-1%<none>%%0#0#
+192.168.1.103 (root)=#109#0% 192.168.1.103%22%root%%-1%-1%%%22%%0%0%Interactive shell%%%-1%0%0%0%%1080%%0%0#MobaFont%12%0%0%0%15%236,236,236%0,0,0%180,180,192%0%-1%0%%xterm%-1%0%0,0,0%54,54,54%255,96,96%255,128,128%96,255,96%128,255,128%255,255,54%255,255,128%96,96,255%128,128,255%255,54,255%255,128,255%54,255,255%128,255,255%236,236,236%255,255,255%80%24%0%1%-1%<none>%%0#0#
+192.168.1.103 (summer)=#109#0%192.168.1.103%22%summer%%-1%-1%%%22%%0%0%Interactive shell%%%-1%0%0%0%%1080%%0%0#MobaFont%12%0%0%0%15%236,236,236%0,0,0%180,180,192%0%-1%0%%xterm%-1%0%0,0,0%54,54,54%255,96,96%255,128,128%96,255,96%128,255,128%255,255,54%255,255,128%96,96,255%128,128,255%255,54,255%255,128,255%54,255,255%128,255,255%236,236,236%255,255,255%80%24%0%1%-1%<none>%%0#0#
+192.168.1.104 (summer)=#109#0%192.168.1.104%22%summer%%-1%-1%%%22%%0%0%Interactive shell%%%-1%0%0%0%%1080%%0%0#MobaFont%12%0%0%0%15%236,236,236%0,0,0%180,180,192%0%-1%0%%xterm%-1%0%0,0,0%54,54,54%255,96,96%255,128,128%96,255,96%128,255,128%255,255,54%255,255,128%96,96,255%128,128,255%255,54,255%255,128,255%54,255,255%128,255,255%236,236,236%255,255,255%80%24%0%1%-1%<none>%%0#0#
+47.74.134.70 (Leafxu) (1)=#109#0%47.74.134.70%22%Leafxu%%-1%-1%%%22%%0%0%Interactive shell%%%-1%0%0%0%%1080%%0%0#MobaFont%12%0%0%0%15%236,236,236%0,0,0%180,180,192%0%-1%0%%xterm%-1%0%0,0,0%54,54,54%255,96,96%255,128,128%96,255,96%128,255,128%255,255,54%255,255,128%96,96,255%128,128,255%255,54,255%255,128,255%54,255,255%128,255,255%236,236,236%255,255,255%80%24%0%1%-1%<none>%%0#0#
+47.74.134.70 (root)=#109#0%47.74.134.70%7233%root%%-1%-1%%%22%%0%0%Interactive shell%%%-1%0%0%0%%1080%%0%0#MobaFont%12%0%0%0%15%236,236,236%0,0,0%180,180,192%0%-1%0%%xterm%-1%0%0,0,0%54,54,54%255,96,96%255,128,128%96,255,96%128,255,128%255,255,54%255,255,128%96,96,255%128,128,255%255,54,255%255,128,255%54,255,255%128,255,255%236,236,236%255,255,255%80%24%0%1%-1%<none>%%0#0#
+47.74.134.70 (root) (1)=#109#0%47.74.134.70%22%root%%-1%-1%%%22%%0%0%Interactive shell%%%-1%0%0%0%%1080%%0%0#MobaFont%12%0%0%0%15%236,236,236%0,0,0%180,180,192%0%-1%0%%xterm%-1%0%0,0,0%54,54,54%255,96,96%255,128,128%96,255,96%128,255,128%255,255,54%255,255,128%96,96,255%128,128,255%255,54,255%255,128,255%54,255,255%128,255,255%236,236,236%255,255,255%80%24%0%1%-1%<none>%%0#0#
+47.91.213.12 (summer) (1)=#109#0%47.91.213.12%22%summer%%-1%-1%%%22%%0%0%Interactive shell%%%-1%0%0%0%%1080%%0%0#MobaFont%12%0%0%0%15%236,236,236%0,0,0%180,180,192%0%-1%0%%xterm%-1%0%0,0,0%54,54,54%255,96,96%255,128,128%96,255,96%128,255,128%255,255,54%255,255,128%96,96,255%128,128,255%255,54,255%255,128,255%54,255,255%128,255,255%236,236,236%255,255,255%80%24%0%1%-1%<none>%%0#0#
+www.leafxu.top (root)=#109#0%www.leafxu.top%22%root%%-1%-1%%%22%%0%0%Interactive shell%%%-1%0%0%0%%1080%%0%0#MobaFont%12%0%0%0%15%236,236,236%0,0,0%180,180,192%0%-1%0%%xterm%-1%0%0,0,0%54,54,54%255,96,96%255,128,128%96,255,96%128,255,128%255,255,54%255,255,128%96,96,255%128,128,255%255,54,255%255,128,255%54,255,255%128,255,255%236,236,236%255,255,255%80%24%0%1%-1%<none>%%0#0#
+
+[LastInstanceSessions]
+0=www.leafxu.top (root)
+
+[22:55.03.815]  
+[22:55.03.815]  
+[22:55.03.815]  ================================================================================
+[22:55.03.815]  
+[22:55.03.815]  
+[22:55.03.815]  
+[22:55.03.815]  
+[22:55.03.816]  BEGIN CreerFstab
+[22:55.03.816]      CreerFstab: RootDirectory = C:/Users/Summer/AppData/Local/Temp/Mxt94
+[22:55.03.817]      CreerFstab: HomeDirectory = C:/Users/Summer/AppData/Local/Temp/Mxt94/tmp/HOME_S~1
+[22:55.03.818]  END CreerFstab
+[22:55.03.820]  BEGIN extraireFichiers1
+[22:55.03.820]      BEGIN CreerProfile
+[22:55.03.820]      END CreerProfile
+[22:55.03.820]      BEGIN CreerSshConfig
+[22:55.03.821]      END CreerSshConfig
+[22:55.03.821]      BEGIN CreerBaseProfile
+[22:55.03.847]          NEW PLUGIN: mobase
+[22:55.03.847]          BEGIN ProcessPlugin(mobase)
+[22:55.03.853]          END ProcessPlugin(mobase)
+[22:55.03.854]          NEW PLUGIN: J:\MobaXterm.9.4\crack\CygUtils.plugin
+[22:55.03.854]          BEGIN ProcessPlugin(J:\MobaXterm.9.4\crack\CygUtils.plugin)
+[22:55.03.889]              
+[22:55.03.889]              --> CygUtils version: 1.46
+[22:55.03.889]              
+[22:55.03.899]          END ProcessPlugin(J:\MobaXterm.9.4\crack\CygUtils.plugin)
+[22:55.03.901]          Request for file extraction: /bin/ssh-pageant.exe
+[22:55.03.901]          Extracting "/bin/ssh-pageant.exe"
+[22:55.03.901]          File extracted from CygUtils.plugin.
+[22:55.03.904]          Request for file extraction: /bin/cyggcc_s-1.dll
+[22:55.03.904]          Extracting "/bin/cyggcc_s-1.dll"
+[22:55.03.905]          File extracted from CygUtils.plugin.
+[22:55.03.905]          BEGIN WaitForAllThreads
+[22:55.03.905]          END WaitForAllThreads
+[22:55.03.923]      END CreerBaseProfile
+[22:55.03.923]      BEGIN MkGroupFile
+[22:55.03.923]          BEGIN GetLocalGroups
+[22:55.03.926]          END GetLocalGroups
+[22:55.03.933]          MkGroupFile OK
+[22:55.03.933]      END MkGroupFile
+[22:55.03.933]      BEGIN MkPasswdFile
+[22:55.03.934]          Current Domain: DESKTOP-A2N330R
+[22:55.03.934]          BEGIN Bui_GetWindowsUsersAccount
+[22:55.03.935]          END Bui_GetWindowsUsersAccount
+[22:55.03.941]          MkPasswdFile OK
+[22:55.03.941]      END MkPasswdFile
+[22:55.03.941]      BEGIN CreerNsswitch
+[22:55.03.942]      END CreerNsswitch
+[22:55.03.945]      Request for file extraction: /bin/scrdaemons
+[22:55.03.945]      Extracting "/bin/scrdaemons"
+[22:55.03.945]      File extracted from CygUtils.plugin.
+[22:55.03.945]      CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\scrdaemons, C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\init.d\tftp);
+[22:55.03.952]      CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\scrdaemons, C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\init.d\ftp);
+[22:55.03.958]      CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\scrdaemons, C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\init.d\http);
+[22:55.03.965]      CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\scrdaemons, C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\init.d\ssh);
+[22:55.03.970]      CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\scrdaemons, C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\init.d\telnet);
+[22:55.03.976]      CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\scrdaemons, C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\init.d\nfs);
+[22:55.03.982]      CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\scrdaemons, C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\init.d\vnc);
+[22:55.03.990]      Request for file extraction: /bin/cygtermd.exe
+[22:55.03.990]      Extracting "/bin/cygtermd.exe"
+[22:55.03.990]      File extracted from CygUtils.plugin.
+[22:55.03.994]      Request for file extraction: /bin/cygz.dll
+[22:55.03.995]      Extracting "/bin/cygz.dll"
+[22:55.03.996]      File extracted from CygUtils.plugin.
+[22:55.04.000]      Request for file extraction: /bin/cyggcc_s-1.dll
+[22:55.04.000]      Extracting "/bin/cyggcc_s-1.dll"
+[22:55.04.000]      File extracted from CygUtils.plugin.
+[22:55.04.003]      Request for file extraction: /bin/cygwin-console-helper.exe
+[22:55.04.003]      Extracting "/bin/cygwin-console-helper.exe"
+[22:55.04.004]      File extracted from CygUtils.plugin.
+[22:55.04.008]      Request for file extraction: /bin/ssh.exe
+[22:55.04.008]      Extracting "/bin/ssh.exe"
+[22:55.04.008]      File extracted from CygUtils.plugin.
+[22:55.04.012]      Request for file extraction: /etc/bash.bash_logout
+[22:55.04.013]      Request for file extraction: /etc/profile.d
+[22:55.04.013]      Request for file extraction: /etc/profile.d/*
+[22:55.04.013]      CreerRaccourciVersMobaXterm(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\MobaListPorts, -listports);
+[22:55.04.014]      CreerRaccourciVersMobaXterm(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\MobaPictureViewer, -picview);
+[22:55.04.015]      CreerRaccourciVersMobaXterm(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\MobaCalc, -calc);
+[22:55.04.015]      CreerRaccourciVersMobaXterm(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\MobaTextEditor, -edit);
+[22:55.04.016]      CreerRaccourciVersMobaXterm(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\MobaCompareFiles, -compfiles);
+[22:55.04.016]      CreerRaccourciVersMobaXterm(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\MobaCompareFolders, -compfolders);
+[22:55.04.017]      Request for file extraction: /usr/share/terminfo/78/xterm
+[22:55.04.017]      Extracting "/usr/share/terminfo/78/xterm"
+[22:55.04.017]      File extracted from CygUtils.plugin.
+[22:55.04.017]      Request for file extraction: /usr/share/terminfo/63/cygwin
+[22:55.04.017]      Extracting "/usr/share/terminfo/63/cygwin"
+[22:55.04.018]      File extracted from CygUtils.plugin.
+[22:55.04.018]      Request for file extraction: /etc/bash_completion
+[22:55.04.018]      Extracting "/etc/bash_completion"
+[22:55.04.018]      File extracted from CygUtils.plugin.
+[22:55.04.018]      Request for file extraction: /usr/share/zoneinfo/posixrules
+[22:55.04.018]      Extracting "/usr/share/zoneinfo/posixrules"
+[22:55.04.019]      File extracted successfully.
+[22:55.04.019]      Request for file extraction: /etc/inputrc
+[22:55.04.019]      Extracting "/etc/inputrc"
+[22:55.04.019]      File extracted from CygUtils.plugin.
+[22:55.04.019]  END extraireFichiers1
+[22:55.04.019]  CreerLienSymbolique(/proc/registry, C:\Users\Summer\AppData\Local\Temp\Mxt94\registry);
+[22:55.04.021]  CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\bash.exe, C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\sh);
+[22:55.04.023]  CreerLienSymbolique(C:\WINDOWS\system32\drivers\etc\hosts, C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\hosts);
+[22:55.04.025]  CreerLienSymbolique(C:\WINDOWS\system32\drivers\etc\networks, C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\networks);
+[22:55.04.027]  CreerLienSymbolique(C:\WINDOWS\system32\drivers\etc\protocol, C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\protocol);
+[22:55.04.029]  CreerLienSymbolique(C:\WINDOWS\system32\drivers\etc\services, C:\Users\Summer\AppData\Local\Temp\Mxt94\etc\services);
+[22:55.04.033]  CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\drives, C:\Users\Summer\AppData\Local\Temp\Mxt94\cygdrive);
+[22:55.04.034]  CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\drives, C:\Users\Summer\AppData\Local\Temp\Mxt94\mnt);
+[22:55.04.037]  CreerLienSymbolique(C:\Users\Summer\AppData\Local\Temp\Mxt94\drives, C:\Users\Summer\AppData\Local\Temp\Mxt94\media);
+[22:55.04.039]  BEGIN WaitForAllThreads
+[22:55.04.039]  END WaitForAllThreads
+[22:55.04.043]  
+[22:55.04.043]  BEGIN Form4.FormActivate
+[22:55.04.043]      Form4.FormActivate0: First time window activation
+[22:55.04.043]      Form4.FormActivate1
+[22:55.04.044]      Form4.FormActivate2
+[22:55.04.046]      Form4.FormActivate3
+[22:55.04.048]      Form4.FormActivate4
+[22:55.04.049]      Form4.FormActivate5
+[22:55.04.049]      BEGIN LoadParamsFromIni: C:\Users\Summer\DOCUME~1\MobaXterm\MobaXterm.ini
+[22:55.04.049]          LoadParamsFromIni: ComboFontName.Font.Name:=MobaFont
+[22:55.04.049]          LoadParamsFromIni: ComboFontName.ItemIndex:=18
+[22:55.04.049]          LoadParamsFromIni: ComboFontName.Font.Charset:=0
+[22:55.04.050]          LoadParamsFromIni1
+[22:55.04.055]          LoadParamsFromIni2
+[22:55.04.058]          LoadParamsFromIni3
+[22:55.04.058]          LoadParamsFromIni4
+[22:55.04.058]          LoadParamsFromIni5
+[22:55.04.058]          LoadParamsFromIni6
+[22:55.04.058]          BEGIN TFormManagePasswords.sRadioButton4Click
+[22:55.04.058]          END TFormManagePasswords.sRadioButton4Click
+[22:55.04.058]          LoadParamsFromIni7
+[22:55.04.058]          LoadParamsFromIni8
+[22:55.04.059]          LoadParamsFromIni9
+[22:55.04.059]          LoadParamsFromIni10
+[22:55.04.063]          LoadParamsFromIni11
+[22:55.04.063]          LoadParamsFromIni12
+[22:55.04.063]          LoadParamsFromIni13
+[22:55.04.064]          LoadParamsFromIni14
+[22:55.04.137]          LoadParamsFromIni15
+[22:55.04.137]          LoadParamsFromIni16
+[22:55.04.137]      END LoadParamsFromIni
+[22:55.04.137]      BEGIN TFormPortForwarding.Timer1Timer
+[22:55.04.137]          (SSHTunnel)    Begin TFormPortForwarding.LoadIni
+[22:55.04.137]          (SSHTunnel)    End TFormPortForwarding.LoadIni
+[22:55.04.137]      END TFormPortForwarding.Timer1Timer
+[22:55.04.137]      Form4.FormActivate: OldMaximized:=Form4.WindowState
+[22:55.04.137]      Form4.FormActivate: TermImage.Canvas.Font.Assign(MobaFont)
+[22:55.04.137]      Form4.FormActivate: TermImage.Canvas.Font.Size:=12
+[22:55.04.137]      Form4.FormActivate: TermImage.Canvas.Font.Name:=MobaFont
+[22:55.04.137]      Form4.FormActivate: Starting "GetMinHeight"
+[22:55.04.138]      GetMinHeight = 552
+[22:55.04.138]      Form4.FormActivate: Form4.Constraints.MinHeight:=552
+[22:55.04.138]      GetMinWidth = 1085
+[22:55.04.138]      Form4.FormActivate: Form4.Constraints.MinWidth:=1085
+[22:55.04.138]      Form4.FormActivate: Form4.Left:=417
+[22:55.04.138]      BEGIN GetNextAvailableX
+[22:55.04.138]      END GetNextAvailableX = 1
+[22:55.04.138]      
+[22:55.04.138]      CurrentX = 1
+[22:55.04.138]      ChDir(Form1.BaseDir): J:\MobaXterm.9.4\crack\
+[22:55.04.139]      FirstParam:
+[22:55.04.139]      Launching NewTab
+[22:55.04.139]      
+[22:55.04.139]      BEGIN NEWTAB(home, 135, 0)
+[22:55.04.150]          NEWTAB: Application.ProcessMessages
+[22:55.04.150]          NEWTAB: Timer1_Disable
+[22:55.04.215]          
+[22:55.04.215]          BEGIN Form4.FormActivate
+[22:55.04.215]          END Form4.FormActivate
+[22:55.04.215]          
+[22:55.04.216]          BEGIN WMSize
+[22:55.04.216]              BEGIN TFormXterm.FormResize
+[22:55.04.216]                  TFormXterm.FormResize: CentrerBtnReattachTab
+[22:55.04.217]                  TFormXterm.FormResize: SplitModeResize
+[22:55.04.217]                  TFormXterm.FormResize: TabMax<=0. Exiting...
+[22:55.04.217]              END TFormXterm.FormResize
+[22:55.04.223]              BEGIN AdapterFlechesDeLaSidebar
+[22:55.04.224]              END AdapterFlechesDeLaSidebar
+[22:55.04.225]          END WMSize
+[22:55.04.225]          NEWTAB: Verifying if max number of tabs has been reached...
+[22:55.04.225]          NEWTAB: Creating SFTPRecord...
+[22:55.04.231]          NEWTAB: Creating menu items and popup entries for new tab...
+[22:55.04.231]          NEWTAB: Trying to find OldIndice...
+[22:55.04.231]          NEWTAB: Cts1.BeginUpdate;
+[22:55.04.231]          NEWTAB: Creating new tab...
+[22:55.04.231]          NEWTAB:        Tab index: 0
+[22:55.04.231]          NEWTAB:        NumTerm  : 1
+[22:55.04.231]          NEWTAB:        Title    : Home
+[22:55.04.231]          NEWTAB:        Command  : home
+[22:55.04.231]          Cts1ActiveTabChanged: New index = 0
+[22:55.04.231]          NEWTAB: Cts1.EndUpdates
+[22:55.04.247]          NEWTAB: Changing tab index A = 0
+[22:55.04.247]          BEGIN WaitForAllThreads
+[22:55.04.247]          END WaitForAllThreads
+[22:55.04.247]          
+[22:55.04.247]          LancerRxvt(home, Home);
+[22:55.04.247]          
+[22:55.04.248]          SetEnvironmentVariable(LOCALE, zh_CN.UTF-8)
+[22:55.04.248]          SetEnvironmentVariable(PATH, C:\Users\Summer\AppData\Local\Temp\Mxt94\bin;C:\WINDOWS\;C:\WINDOWS\system32\)
+[22:55.04.248]          Enabling MOBANOACL
+[22:55.04.248]          
+[22:55.04.248]          ShellExecute: motty.exe
+[22:55.04.248]          
+[22:55.04.248]          CreerSessionMoTTY(1, home, Home)
+[22:55.04.249]          Setting LOCALE=zh_CN.UTF-8
+[22:55.04.251]          CreerSessionMoTTY(-1, TCPCapture, TCPCapture)
+[22:55.04.251]          Setting LOCALE=zh_CN.UTF-8
+[22:55.04.289]          
+[22:55.04.289]          FindWindow()
+[22:55.04.289]          Moxt2.SetParent
+[22:55.04.358]          NEWTAB: Application.OnMessage:=AppMessage
+[22:55.04.360]          NEWTAB: Changing tab index C = 0
+[22:55.04.360]          NEWTAB: Launching DisplayCurrentTab...
+[22:55.04.360]          BEGIN DisplayCurrentTab
+[22:55.04.360]              DisplayCurrentTab: FormClick
+[22:55.04.360]              (SSH-Browser) DisplayCurrentTab(0): ActiverPanel14
+[22:55.04.360]              (SSH-Browser) BEGIN ActiverPanel14
+[22:55.04.360]              (SSH-Browser) BEGIN DesactiverPanel14
+[22:55.04.361]              (SSH-Browser) END DesactiverPanel14
+[22:55.04.361]              (SSH-Browser) END ActiverPanel14;
+[22:55.04.361]              DisplayCurrentTab: Cts1.BeginUpdate;
+[22:55.04.361]              DisplayCurrentTab: Cts1.EndUpdates
+[22:55.04.361]              DisplayCurrentTab: Show selected tab
+[22:55.04.429]              BEGIN ResizeTerminal
+[22:55.04.429]              END ResizeTerminal
+[22:55.04.429]              DisplayCurrentTab: Hide other tabs
+[22:55.04.429]              DisplayCurrentTab: Adapting buttons enable/disable states
+[22:55.04.429]              DisplayCurrentTab: DeterminerBoutonDetachOuReattach
+[22:55.04.429]              DisplayCurrentTab: DistribuerLeFocus
+[22:55.04.430]              BEGIN WMNewTab: 0
+[22:55.04.430]                  WMNewTab: FormClick
+[22:55.04.430]                  WMNewTab: LooseFocus
+[22:55.04.430]              END WMNewTab: 0
+[22:55.04.430]              BEGIN WMNewTab: 0
+[22:55.04.430]                  WMNewTab: FormClick
+[22:55.04.430]                  WMNewTab: LooseFocus
+[22:55.04.430]              END WMNewTab: 0
+[22:55.04.430]              BEGIN WMNewTab: 0
+[22:55.04.430]                  WMNewTab: FormClick
+[22:55.04.430]                  WMNewTab: LooseFocus
+[22:55.04.430]              END WMNewTab: 0
+[22:55.04.430]              BEGIN WMNewTab: 0
+[22:55.04.430]                  WMNewTab: FormClick
+[22:55.04.430]                  WMNewTab: LooseFocus
+[22:55.04.430]              END WMNewTab: 0
+[22:55.04.431]          END DisplayCurrentTab
+[22:55.04.431]          NEWTAB: NewTab_ReEnable_Timer1
+[22:55.04.431]          NEWTAB: MajVerticalTabs
+[22:55.04.431]          NEWTAB: Cts1.Resize;
+[22:55.04.436]      END NEWTAB(home, 135, 0)
+[22:55.04.436]      
+[22:55.04.436]      
+[22:55.04.436]      Launching bookmarks();
+[22:55.04.436]      Launching sBitBtn7Click(sBitBtn7);
+[22:55.04.436]      
+[22:55.04.436]      BEGIN LancerXWin();
+[22:55.04.438]          Request for file extraction: /usr/share/X11/xkb/symbols/keypad
+[22:55.04.438]          Extracting "/usr/share/x11/xkb/symbols/mokeypad"
+[22:55.04.438]          File extracted successfully.
+[22:55.04.438]          Request for file extraction: /usr/share/X11/xkb/symbols/pc
+[22:55.04.438]          Extracting "/usr/share/x11/xkb/symbols/mopc"
+[22:55.04.438]          File extracted successfully.
+[22:55.04.455]          Request for file extraction: /usr/share/fonts/misc/7x13-iso8859-1.pcf
+[22:55.04.455]          Extracting "/usr/share/fonts/misc/7x13-iso8859-1.pcf"
+[22:55.04.455]          File extracted successfully.
+[22:55.04.455]          Request for file extraction: /usr/share/fonts/misc/6x13-ISO8859-1.pcf
+[22:55.04.455]          Extracting "/usr/share/fonts/misc/6x13-iso8859-1.pcf"
+[22:55.04.456]          File extracted successfully.
+[22:55.04.456]          Request for file extraction: /usr/share/fonts/misc/cursor.pcf
+[22:55.04.456]          Extracting "/usr/share/fonts/misc/cursor.pcf"
+[22:55.04.456]          File extracted successfully.
+[22:55.04.456]          Request for file extraction: /usr/share/icons/default/cursors/left_ptr
+[22:55.04.456]          Request for file extraction: /usr/share/icons/default/index.theme
+[22:55.04.457]          Request for file extraction: /usr/share/pixmaps/default/cursors/left_ptr
+[22:55.04.457]          Request for file extraction: /usr/share/pixmaps/default/index.theme
+[22:55.04.457]          Request for file extraction: /usr/share/fonts/misc/fonts.dir
+[22:55.04.457]          Extracting "/usr/share/fonts/misc/fonts.dir"
+[22:55.04.457]          File extracted successfully.
+[22:55.04.458]          Request for file extraction: /usr/share/fonts/misc/fonts.alias
+[22:55.04.458]          Extracting "/usr/share/fonts/misc/fonts.alias"
+[22:55.04.458]          File extracted successfully.
+[22:55.04.458]          Request for file extraction: /usr/share/fonts/75dpi/fonts.dir
+[22:55.04.458]          Request for file extraction: /usr/share/fonts/75dpi/fonts.alias
+[22:55.04.459]          Request for file extraction: /usr/share/fonts/100dpi/fonts.dir
+[22:55.04.459]          Request for file extraction: /usr/share/fonts/100dpi/fonts.alias
+[22:55.04.460]          Request for file extraction: /usr/share/fonts/Speedo/fonts.dir
+[22:55.04.460]          Request for file extraction: /usr/share/fonts/Speedo/fonts.alias
+[22:55.04.461]          Request for file extraction: /usr/share/fonts/OTF/fonts.dir
+[22:55.04.461]          Request for file extraction: /usr/share/fonts/OTF/fonts.alias
+[22:55.04.462]          Request for file extraction: /usr/share/fonts/TTF/fonts.dir
+[22:55.04.462]          Request for file extraction: /usr/share/fonts/TTF/fonts.alias
+[22:55.04.462]          Request for file extraction: /usr/share/fonts/cyrillic/fonts.dir
+[22:55.04.463]          Request for file extraction: /usr/share/fonts/cyrillic/fonts.alias
+[22:55.04.463]          Request for file extraction: /usr/share/fonts/Type1/fonts.dir
+[22:55.04.464]          Request for file extraction: /usr/share/fonts/Type1/fonts.alias
+[22:55.04.464]          Request for file extraction: /usr/share/X11/rgb.txt
+[22:55.04.464]          Request for file extraction: /usr/share/X11/XErrorDB
+[22:55.04.465]          Request for file extraction: /usr/share/X11/XKeysymDB
+[22:55.04.465]          BEGIN WaitForAllThreads
+[22:55.04.465]          END WaitForAllThreads
+[22:55.04.466]          BEGIN WaitForAllThreads
+[22:55.04.466]          END WaitForAllThreads
+[22:55.04.466]          SetEnvironmentVariable(LOCALE, zh_CN.UTF-8)
+[22:55.04.466]          SetEnvironmentVariable(PATH, C:\Users\Summer\AppData\Local\Temp\Mxt94\bin;C:\WINDOWS\;C:\WINDOWS\system32\)
+[22:55.04.467]          Enabling MOBANOACL
+[22:55.04.467]          
+[22:55.04.467]          XWin Exec: C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\bash.exe -l -i -c "XWin_MobaX.exe  -silent-dup-error -notrayicon -nolisten inet6 -hostintitle +bs  -clipboard -nowgl -multiwindow -noreset  -fp /usr/share/fonts/misc,/usr/share/fonts/75dpi,/usr/share/fonts/100dpi,/usr/share/fonts/Speedo,/usr/share/fonts/OTF,/usr/share/fonts/TTF,/usr/share/fonts/cyrillic,/usr/share/fonts/Type1  :1"
+[22:55.04.467]          
+[22:55.04.467]          BEGIN ShellExecuteA(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\XWin_MobaX.exe,  -silent-dup-error -notrayicon -nolisten inet6 -hostintitle +bs  -clipboard -nowgl -multiwindow -noreset :1)
+[22:55.04.468]              ShellExecuteA: ShellExecuteEx succeeded.
+[22:55.04.468]          END ShellExecuteA(C:\Users\Summer\AppData\Local\Temp\Mxt94\bin\XWin_MobaX.exe,  -silent-dup-error -notrayicon -nolisten inet6 -hostintitle +bs  -clipboard -nowgl -multiwindow -noreset :1)
+[22:55.04.468]      END LancerXWin();
+[22:55.04.468]  END Form4.FormActivate
+[22:55.04.468]  
+[22:55.04.468]  Form1.Timer1Timer finished.
+[22:55.04.468]  
+
+
+
+
+
+
+
+[23:36.23.103]  BEGIN Form4.CloseQuery
+[23:36.23.103]      
+[23:36.23.103]      BEGIN CloseTab(0)
+[23:36.23.103]          CloseTab:  Tab is Home
+[23:36.23.103]          Freeing object FrmHome2 (TFrameHome)
+[23:36.23.134]          CloseTab:  Delete MobaScript file
+[23:36.23.134]          CloseTab:  Close TFormDetachedTab
+[23:36.23.134]          CloseTab: Cts1.BeginUpdate;
+[23:36.23.134]          CloseTab: Cts1.Tabs.Delete(0);
+[23:36.23.134]          CloseTab: Cts1.Tabs.Delete(0);
+[23:36.23.134]          (SSH-Browser) TabSFTP[0].Free;
+[23:36.23.134]          Freeing object TJvThread
+[23:36.23.134]          Freeing object TElSftpClient
+[23:36.23.134]          Freeing object TElSSHClient
+[23:36.23.134]          Freeing object TElSocket
+[23:36.23.134]          Freeing object TListView
+[23:36.23.134]          Freeing object TElSSHTunnelList
+[23:36.23.134]          Freeing object TElSubsystemSSHTunnel
+[23:36.23.134]          Freeing object TList
+[23:36.23.150]          Freeing object TTimer
+[23:36.23.150]          Changing tab index D = -1
+[23:36.23.150]          BEGIN DisplayCurrentTab
+[23:36.23.150]              DisplayCurrentTab: FormClick
+[23:36.23.150]          END DisplayCurrentTab
+[23:36.23.150]          Form4.Close2
+[23:36.23.150]          BEGIN Form4.CloseQuery
+[23:36.23.150]              BEGIN Form1.CloseQuery
+[23:36.23.150]              END Form1.CloseQuery
+[23:36.23.150]              BEGIN Form1.Close
+[23:36.23.150]              END Form1.Close
+[23:36.23.150]          END Form4.CloseQuery
+[23:36.23.150]      END CloseTab(0)
+[23:36.23.150]      
+[23:36.23.150]      BEGIN Form1.CloseQuery
+[23:36.23.150]      END Form1.CloseQuery
+[23:36.23.150]      BEGIN Form1.Close
+[23:36.23.150]      END Form1.Close
+[23:36.23.150]  END Form4.CloseQuery
+[23:36.23.207]  BEGIN TFormManagePasswords.FormDestroy
+[23:36.23.207]      Form4 is still displayed
+[23:36.23.207]  END TFormManagePasswords.FormDestroy
+[23:36.23.250]  BEGIN TFormPortForwarding.FormDestroy
+[23:36.23.250]  END TFormPortForwarding.FormDestroy
+[23:36.23.267]  BEGIN TFormNetstat.FormDestroy
+[23:36.23.268]  END TFormNetstat.FormDestroy
+[23:36.23.321]  BEGIN TFormSessionEdit.FormDestroy
+[23:36.23.321]  END TFormSessionEdit.FormDestroy
+[23:36.23.462]  BEGIN Form4.Destroy
+[23:36.23.462]      SupprimerCleDeRegistreSiVide(Software\Mobatek)
+[23:36.23.462]      Timer1.Enabled:=false
+[23:36.23.462]      Freeing VNC tabs
+[23:36.23.462]      Freeing X11 tabs
+[23:36.23.462]      Freeing FTP tabs
+[23:36.23.462]      Freeing Home tabs
+[23:36.23.462]      Freeing object TIcon
+[23:36.23.462]      Freeing object TStringList
+[23:36.23.462]  END Form4.Destroy
+[23:36.23.477]  BEGIN WMSize
+[23:36.23.477]  END WMSize
+[23:36.23.477]  
+[23:36.23.477]  
+[23:36.23.477]  Starting procedure TForm1.FormDestroy...
+[23:36.23.477]  TForm1.FormDestroy: Ini36.UpdateFile(C:\Users\Summer\DOCUME~1\MobaXterm\MobaXterm.ini)
+[23:36.23.477]  !!!! Exception EFCreateError: Cannot create file "C:\Users\Summer\DOCUME~1\MobaXterm\MobaXterm.ini". 另一个程序正在使用此文件，进程无法访问。 during Form1Destroy0
