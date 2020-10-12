@@ -64,6 +64,7 @@ set noswapfile
 "编码设置
 set enc=utf-8
 set fencs=utf-8,ucs-bom,shift-jis,gb18030,gbk,gb2312,cp936
+:set fileencoding=gb2312
 
 "语言设置
 set langmenu=zh_CN.UTF-8

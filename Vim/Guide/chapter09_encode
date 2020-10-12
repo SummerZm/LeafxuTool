@@ -1,0 +1,26 @@
+vim字符编码设置项简介
+- encoding: Vim内部使用的字符编码方式
+    1. 包括 buffer (缓冲区)、菜单文本、消息文本等
+    2. 默认是locale选择 
+    3. 只在.vimrc 中改变它的值才有意义
+    ```sh
+        # 你的vim的encoding为utf-8,所编辑的文件采用gbk编码
+        # vim会自动将读入的文件转成utf-8,而当你写入文件时,又会自动转回成cp936（文件的保存编码). 
+    ```
+- fileencoding: Vim当前编辑的文件的字符编码方式,保存文件时也会将文件保存为这种字符编码
+- fileencodings: Vim自动探测fileencoding的顺序列表
+- termencoding: Vim 所工作的终端 (或者 Windows 的 Console 窗口) 的字符编码方式。如果vim所在的term与vim编码相同，则无需设置。
+
+vim字符编码设置流程
+1. Vim 启动，根据 .vimrc 中设置的 encoding 的值来设置 buffer、菜单文本、消息文的字符编码方式。 
+2. 读取需要编辑的文件，根据 fileencodings 中列出的字符编码方式逐一探测该文件编码方式。并设置 fileencoding 为探测到的。 
+3. 对比 fileencoding 和 encoding 的值，若不同则调用 iconv 将文件内容转换为encoding 所描述的字符编码方式，并且把转换后的内容放到为此文件开辟的 buffer 里，需要调用外部的 iconv.dll(注2)，你需要保证这个文件存在于 $VIMRUNTIME 或者其他列在 PATH 环境变量中的目录里。 
+4. 保存文件时，再次对比 fileencoding 和 encoding 的值。若不同，再次调用 iconv 将即将保存的 buffer 中的文本转换为 fileencoding 所描述的字符编码方式，
+
+fileencoding 建议设置为 chinese (chinese 是个别名，在 Unix 里表示 gb2312，在 Windows 里表示cp936，也就是 GBK 的代码页)。 
+
+.vimrc文件如下:
+:set encoding=utf-8
+:set fileencodings=ucs-bom,utf-8,cp936
+:set fileencoding=gb2312
+:set termencoding=utf-8
