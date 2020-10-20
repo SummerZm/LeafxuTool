@@ -18,7 +18,7 @@
 	例子：
 	foo/*：忽略目录 foo下的全部内容
 	*.[oa]：忽略所有.o和.a文件
-	!calc.o：不能忽略calc.o文件
+	!git config --global alias.ci commicalc.o：不能忽略calc.o文件
 
         e. 在Git仓库中有一个".git/info/exclude"文件，当我们指向对特定的仓库使用特定的过滤规则时，我们可以把过滤语句写在exclude文件中。
 
@@ -41,3 +41,9 @@
     a. 查看配置：git config --list
     b. 配置用户：git config user.name "xxxx"
     c. 配置邮箱：git config user.mail "xxxx"
+
+ 4. 取消配置
+    a. git config --global --unset alias.ci
+
+ 5. 修改全局配置
+    a. git config --global --edit
