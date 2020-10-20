@@ -32,9 +32,7 @@
              git unstage test.py <=> git reset HEAD test.py
 
         ---> git config --global alias.last 'log -1'
-        ---> git config --global alias.lg "log --color --graph 
-                --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
-                 --abbrev-commit"
+        ---> git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
 
     b. 当前用户的Git配置文件放在用户主目录下的一个隐藏文件.gitconfig。
     c. --global是针对当前用户起作用的，如果不加，那只针对当前的仓库起作用,t配置文件放在.git/config文件中。
