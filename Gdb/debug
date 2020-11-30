@@ -41,8 +41,15 @@
         b. 简单栈帧信息: (gdb) frame
         c. 跳到上一个栈帧: (gdb) up 1
         d. 跳到下一个栈帧: (gdb) down 1
-                                                                                                                    
-2. other
+
+3. 单步调试
+    A. next: 同样单步跟踪，如果有函数调用，他不会进入该函数。
+    B. step: 单步跟踪，如果有函数调用，他会进入该函数。进入函数的前提是，此函数被编译有 debug 信息。
+    C. set step-mode on: 在进行单步跟踪时，程序不会因为没有 debug 信息而不停住。这个参数有很利于查看机器码。
+    D. u: 可以运行程序直到退出循环体。
+    E. continue / c / fg: 继续运行程序
+
+4. other
     A. 显示linespec对应的汇编地址范围: info line linespeca  eg: info line 20
     B. 显示address地址对应的源码位置: info line *address    eg: info line *0x400537
 
