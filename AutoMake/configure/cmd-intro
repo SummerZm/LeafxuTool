@@ -1,0 +1,3 @@
+1. set -o posix / set +o posix  # Open/close posix function
+2. $# -- agrument counts 
+3. $@ -- all agruments

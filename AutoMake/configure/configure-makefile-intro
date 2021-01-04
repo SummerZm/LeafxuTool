@@ -1,0 +1,172 @@
+http://www.cnblogs.com/zmlctt/p/4161547.htm
+
+makefile中的$$(M)
+---------------------------------------
+1. $var和$$var的区别 
+	a. $var读取makefile的变量然后扩展开，将其值作为参数传给了一个shell命令。
+	b. $$var是在访问一个shell命令内定义的变量，而非makefile的变量。
+	c. 如果某规则有n个shell命令行构成，而相互之间没有用';'和'\'连接起来的话，就是相互之间没有关联的shell命令，相互之间不能变量共享。
+		makefile代码段1：
+		VAR=3   
+		target: prerequsite1 prerequsite2
+			echo $VAR        # 输出3
+			VAR=4            # 独立的shell命令自己定义一个shell变量VAR，值为4，不会影响到makefile中的VAR。
+			echo $VAR        # 输出3 -- makefile中的变量VAR的值依然是3
+			echo $$VAR       # 输出空行 -- makefile将$$VAR先执行一次扩展得到shell命令: echo $VAR; 对于这个shell命令来说VAR是一个未定义的变量
+
+		makefile代码段2：
+		VAR=3   
+		target: prerequsite1 prerequsite2
+			echo $VAR;\         # 输出3
+			VAR=4;\           	# 定义一个shell变量VAR，值为4
+			echo $VAR;\         # 输出3，因为虽然shell中有VAR变量，可是makefile先要进行扩展，扩展的结果就是echo 3
+			echo $$VAR          # 输出4，因为makefile扩展结果为echo $VAR，而shell中已经有了变量VAR，且其值为4.
+    
+Configure，Makefile.am, Makefile.in, Makefile文件之间关系
+----------------------------------------------------------------------
+0. 总体框图:
+    .--------------,    (autoscan)    .----------------, 
+    | source code  |----------------->| configure.scan |
+    `--------------'(扫描可移植性问题)`----------------'
+                                              |
+                                              | (eidt or autoheader)
+    (说明项目目录结构)                        V
+    .--------------,                  .----------------,    (acloal)     .-----------,  
+    | Makefile.am  |                  |	configure.in   |---------------->| acloal.m4 |	  
+    `--------------'                  `----------------'  (寻找宏定义)   `-----------'
+                  \ (yacc, lex相关处理)  /        \                         /
+                   \         V          /          \                       /
+                    \    (automake)    /            \     (autoconf)      /
+                     \                /              \                   /
+                  .----------------------,          .----------------------, 
+                  |     Makefile.in      |          |     congfigure       |
+                  `----------------------'          `----------------------'
+                                  \                     /                  
+                                   \                   /
+                                    \                 /
+                                  .----------------------,
+                                  |       Makefile       |
+                                  `----------------------'
+								  
+1. 安装autoconf程序: sudo apt-get install autoconf。
+2. autoscan(autoconf，automake): 扫描源代码以搜寻普通的可移植性问题，比如检查编译器，库，头文件等，生成文件configure.scan,它是configure.ac的一个雏形。
+    your source files --> [autoscan*] --> [configure.scan] --> configure.ac
+	
+	configure.ac中宏的顺序一般是这样的：
+	  AC_INIT
+	  测试程序
+      测试函数库
+      测试头文件
+	  测试类型定义
+	  测试结构
+	  测试编译器特性
+	  测试库函数
+	  测试系统调用
+	  AC_OUTPUT
+
+3. aclocal(automake, autoheader, autoconf): 一个perl脚本程序, 根据已经安装的宏，用户定义宏和acinclude.m4文件中的宏将configure.ac文件所需要的宏集中定义到文件 aclocal.m4中。
+   "aclocal - create aclocal.m4 by scanning configure.ac"
+   
+    user input files   optional input     process          output files
+    ================   ==============     =======          ============
+	
+                        acinclude.m4 - - - - -.
+                                              V
+                                          .-------,
+    configure.ac ------------------------>|aclocal|
+                     {user macro files} ->|       |------> aclocal.m4
+                                          `-------'										  
+										  
+4. autoheader(autoconf): 根据configure.ac中的某些宏，比如cpp宏定义，运行m4生成config.h.in
+
+    user input files    optional input     process          output files
+    ================    ==============     =======          ============
+
+                        aclocal.m4 - - - - - - - .
+                                                 |
+                                                 V
+                                         .----------,
+    configure.ac ----------------------->|autoheader|----> autoconfig.h.in
+                                         `----------'
+										 
+5. automake: automake将Makefile.am中定义的结构建立Makefile.in，然后configure脚本将生成的Makefile.in文件转换为Makefile。
+   如果在configure.ac中定义了一些特殊的宏，比如AC_PROG_LIBTOOL，它会调用libtoolize，否则它 会自己产生config.guess和config.sub
+
+    user input files   optional input   processes          output files
+    ================   ==============   =========          ============
+
+                                         .--------,
+                                         |        | - - -> COPYING
+                                         |        | - - -> INSTALL
+                                         |        |------> install-sh
+                                         |        |------> missing
+                                         |automake|------> mkinstalldirs
+    configure.ac ----------------------->|        |
+    Makefile.am  ----------------------->|        |------> Makefile.in
+                                         |        |------> stamp-h.in
+                                     .---+        | - - -> config.guess
+                                     |   |        | - - -> config.sub
+                                     |   `------+-'
+                                     |          | - - - -> config.guess
+                                     |libtoolize| - - - -> config.sub
+                                     |          |--------> ltmain.sh
+                                     |          |--------> ltconfig
+                                     `----------'
+									 
+5.autoconf:将configure.ac中的宏展开，生成configure脚本。这个过程可能要用到aclocal.m4中定义的宏。
+    user input files   optional input   processes          output files
+    ================   ==============   =========          ============
+
+    aclocal.m4 ,autoconfig.h.in - - - - - - -.
+                                             V
+                                         .--------,
+    configure.ac ----------------------->|autoconf|------> configure
+                                         `--------'
+  
+6. ./configure的过程
+                                          .-------------> [config.cache]
+     configure* --------------------------+-------------> config.log
+                                          |
+              [config.h.in] -.            v            .--> [autoconfig.h]
+                             +-------> config.status* -+                   
+              Makefile.in ---'                         `-->   Makefile
+ 
+7. make过程
+ 
+     [autoconfig.h] -.
+                     +--> make* --->  程序
+       Makefile   ---'
+ 
+                                     .---------,
+                   config.site - - ->|         |
+                  config.cache - - ->|configure| - - -> config.cache
+                                     |         +-,
+                                     `-+-------' |
+                                       |         |----> config.status
+                   config.h.in ------->|config-  |----> config.h
+                   Makefile.in ------->|  .status|----> Makefile
+                                       |         |----> stamp-h
+                                       |         +--,
+                                     .-+         |  |
+                                     | `------+--'  |
+                   ltmain.sh ------->|ltconfig|-------> libtool
+                                     |        |     |
+                                     `-+------'     |
+                                       |config.guess|
+                                       | config.sub |
+                                       `------------'
+ 
+                                   .--------,
+                   Makefile ------>|        |
+                   config.h ------>|  make  |
+{project sources} ---------------->|        |--------> {project targets}
+                                 .-+        +--,
+                                 | `--------'  |
+                                 |   libtool   |
+                                 |   missing   |
+                                 |  install-sh |
+                                 |mkinstalldirs|
+                                 `-------------'
+								 
+								 
+								 
