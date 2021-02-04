@@ -1,0 +1,5 @@
+## **SVN仓库迁移到GIT**
+
+git svn clone https://xxx.xxx.xxx.xxx/svn/projects/web
+git remote add origin https://xxx.xxx.xxx.xxx:8091/svn/projects/web.git  
+git push -u origin master
