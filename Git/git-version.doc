@@ -35,7 +35,8 @@
 4. 修改历史记录
     a. [初级:lastest version] --> git commit --amend -m "xxxx"
     b. [中级] --> git rebase -i HEAD~3   修改最近3个提交记录  
-	
+		
+		## 变基操作1
 		pick:	保留该commit（缩写:p）
 		reword:	保留该commit，但我需要修改该commit的注释（缩写:r）
 		edit:	保留该commit, 但我要停下来修改该提交(不仅仅修改注释)（缩写:e）
@@ -44,6 +45,20 @@
 		exec:	执行shell命令（缩写:x）
 		drop:	我要丢弃该commit（缩写:d）
 		最后退出，会提示是否保存, 回车就OK了
+		
+		## 变基操作2
+		git checkout experiment  /* 检出本地experiment分支 */
+		/* 
+			在experiment分支上找和master分支共同祖先结点，然后以本地master为主依次合并；
+			如果出现冲突需要,会自动停下来，要编辑器手动合并, 再执行git rebase --continue 
+			或者 git rebase --abort
+
+			如果要整合到远程分支上需要 git push --fore; 远程分支若受到保护，则要先去掉保护
+		*/
+		git rebase master		 
+
+		相关链接1: https://gitbook.tw/chapters/github/using-force-push.html
+		相关链接2: https://git-scm.com/book/zh/v2/Git-%E5%88%86%E6%94%AF-%E5%8F%98%E5%9F%BA
 
     c. [高级:branch] -->  git filter-branch --<各种filter>  命令 <修改范围>
         --msg-filter
