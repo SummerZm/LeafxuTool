@@ -68,6 +68,29 @@
         eg: 修改邮箱
         git filter-branch --env-filter 'GIT_AUTHOR_EMAIL=john@example.com export GIT_AUTHOR_EMAIL' HEAD
 
+    d. [使用远程分支覆盖本地分支]
+        ```sh
+        # 把远端代码下载到本地分支，不进行合并. 【A. 覆盖被修改的文件】
+        git fetch --all      
+        # 将代码重置到远程最新版本  【B. 删除本地增加的新文件】
+        git reset --hard origin/master 
+        # 进一步和远程分支同步
+        git pull    
+        ```
+
+    5. [Git软件管理的两种方式]
+        ```sh
+        # A. 在本地远程管理
+            1. 本地创建开发分支 dev
+            2. 分支 dev 合并到 本地主干 master  
+            3. 本地主干合并到远端主干 master
+
+        # B. 在远端管理
+            1. 远端有开发分支和master主干。 【开发分支可以是每个开发人员各自拥有一条】
+            2. 开发人员同步远端自己开发分支，在本地自己开发，之后推到自己远端的开发分支机
+            3. 专人或者自己把自己的远端分支合并到远端master主干
+        ```
+
 5. cherry-pick
     a. 分支A上提交了一个更新，需要在分支B上应用这个更新。这时可以使用cherry-pick
     b. 通过"git reflog"找到A上那个更新的SHA1哈希值，然后切换到B分支上使用"git cherry-pick 哈希值"。【可能需要自己解决冲突】
