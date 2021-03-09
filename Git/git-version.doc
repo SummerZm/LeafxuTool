@@ -34,6 +34,8 @@
 3. 查看某个文件的版本信息：git blame filename            
 4. 修改历史记录
     a. [初级:lastest version] --> git commit --amend -m "xxxx"
+        git commit --amend --no-edit --date="Fri Nov 6 20:00:00 2015 -0600" 
+
     b. [中级] --> git rebase -i HEAD~3   修改最近3个提交记录  
 		
 		## 变基操作1
@@ -97,6 +99,5 @@
 
 6. git rebase 用法二
     a.  原理：先将当前分支的HEAD引用指向目标分支和当前分支的共同祖先commit节点，然后将当前分支上的commit一个个apply到目标分支上，apply完以后再将HEAD引用指向当前分支。
-
 
 
