@@ -31,7 +31,13 @@
     f. 撤销版本(回退版本：版本库) 
         ---> git reset --soft HEAD^
  
-3. 查看某个文件的版本信息：git blame filename            
+3. 查看某个文件的版本信息：
+	a. 查看最近一个版本: git blame filename            
+	b. 查看某文件的一系列提交: git log -- filename
+	c. 可以查看某次提交中的某个文件变化：git show commit_id filename
+	d. 查看某次提交的中的变化: git show commit_id
+
+
 4. 修改历史记录
     a. [初级:lastest version] --> git commit --amend -m "xxxx"
         git commit --amend --no-edit --date="Fri Nov 6 20:00:00 2015 -0600" 
