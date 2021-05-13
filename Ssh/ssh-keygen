@@ -38,7 +38,37 @@
 6、当ssh一台没登陆过的机器的时候,需要输入yes,确认一下添加know_hosts文件,在一些脚本处理的时候很不方便，
     修改/etc/ssh/ssh_config文件StrictHostKeyChecking ask为 StrictHostKeyChecking no达到自动添加。
  
-三、总结注意事项
+三、本地配置多个ssh key
+===================================================================================================
+大多数时候，我们的机器上会有很多的git host,比如公司gitlab、github、oschina等，
+那我们就需要在本地配置多个ssh key，使得不同的host能使用不同的ssh key ,做法如下（以公司gitlab和github为例）：
+
+1. 为公司生成一对秘钥ssh key
+  ssh-keygen -t rsa -C 'yourEmail@xx.com' -f ~/.ssh/gitlab-rsa
+
+2. 为github生成一对秘钥ssh key
+  ssh-keygen -t rsa -C 'yourEmail2@xx.com' -f ~/.ssh/github-rsa
+
+3. 在~/.ssh目录下新建名称为config的文件（无后缀名）。用于配置多个不同的host使用不同的ssh key，内容如下：
+
+  # gitlab
+  Host gitlab.com
+      HostName gitlab.com
+      PreferredAuthentications publickey
+      IdentityFile ~/.ssh/gitlab_id-rsa
+  # github
+  Host github.com
+      HostName github.com
+      PreferredAuthentications publickey
+      IdentityFile ~/.ssh/github_id-rsa
+  ​
+  # 配置文件参数
+  # Host : Host可以看作是一个你要识别的模式，对识别的模式，进行配置对应的的主机名和ssh文件
+  # HostName : 要登录主机的主机名
+  # User : 登录名
+  # IdentityFile : 指明上面User对应的identityFile路径
+
+四、总结注意事项
 ========================================================================
 1、文件和目录的权限千万别设置成chmod 777.这个权限太大了，不安全，数字签名也不支持。我开始图省事就这么干了
 2、生成的rsa/dsa签名的公钥是给对方机器使用的。这个公钥内容还要拷贝到authorized_keys 
