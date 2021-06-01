@@ -1,0 +1,15 @@
+1. 载入PHP模块，如httpd.conf中有下列代码则直接去掉前面#即可，没有则加入
+    LoadModule php7_module modules/libphp7.so
+
+2. 在底部加入以下代码使得Apache可以解析php文件
+    <IfModule mod_php7.c>
+      AddType application/x-httpd-php .php
+    </IfModule>
+
+3. 找到如下代码，在index.html后面加入index.php
+    <IfModule dir_module>
+        DirectoryIndex index.html
+    </IfModule>
+
+4. 重启Apache
+    service httpd restart
