@@ -47,3 +47,17 @@
 
  5. 修改全局配置
     a. git config --global --edit
+
+ 6. Window 提交时文件名转义成unicode编码问题
+	a.  git config --global core.quotepath false
+
+
+
+
+
+
+
+
+
+
+
