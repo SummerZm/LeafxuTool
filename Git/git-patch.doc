@@ -1,4 +1,23 @@
-A.  patch�ϲ���ʾ��
-    a.  git diff���ɵ�patch��������git apply --check �鿴patch�Ƿ��ܹ��ɾ�˳����Ӧ�õ���ǰ��֧�С�
-    b.  git format-patch���ɵ�patch���ܴ򵽵�ǰ��֧��git am�������ʾ����������ͻ�����߶��нϺõ���ʾ���ܡ�
-    c.  git format-patch�����Բ��Я���϶����Ϣ���磺�����ߵ����ֵ�
+A.  patch合并提示：
+    a.  git diff生成的patch，可以用git apply --check 查看patch是否能够干净顺利地应用到当前分支中。
+    b.  git format-patch生成的patch不能打到当前分支，git am会给出提示，帮你解决冲突，两者都有较好的提示功能。
+    c.  git format-patch兼容性差，但携带较多的信息。如：开发者的名字等
+    d.  例子：
+        ```sh
+        # 【检查是否能应用成功】
+        git apply --check 0001-minor-fix.patch
+        
+        # 【应用patch】
+        git am -s < 0001-minor-fix.patch
+        ```
+
+B.  生成patch
+    a. 生成从某一个版本以来的补丁 git format-patch <r1> 
+    b. 生成惮改补丁 git format-patch -1 <r1>
+    c. 生成两个版本之间的patch ： git format-patch <r1>..<r2>
+    d. 生成当前的patch：git diff > curr.patch
+
+
+
+
+
