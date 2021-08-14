@@ -1,0 +1,71 @@
+SVN与svn协议简介
+Updated 167 Day(s) Ago所有用户
+操作
+使用Subversion的svn协议访问
+把仓库创建在与客户端相同的机器上，使用file:///协议进行上传和修改的工作。更多时候，仓库应该放在另一台远端服务器上的，在这两端之间，是通过各种仓库存取层（Repository Access，简称RA）的多条通道进行访问的。这些通道中，可以通过不同的网络协议，例如HTTP、SSH等，或本地文件的方式来对仓库进行操作。
+
+Subversion一般使用两种后台服务模式：
+一种是其自己实现的 svnserve，可以通过svn协议访问，
+一种是借助mod_dav_svn 模块，由Apache http 服务器来实现，然后通过HTTP或HTTPS协议来访问。我将要介绍就是第一种方式。
+
+一、svn协议
+客户端若要通过svn协议访问仓库，必须在存放仓库的机器上运行svnserve服务程序。启动该程序后，会监听在3690端口，以响应客户端的访问工作。
+命令：# svnserve -d -r /var/svn/repos
+-d 表示以后台模式运行，-r 用于指定仓库的位置。其余参数，请用svnserve -h查看。
+
+二、使用svn协议访问仓库
+
+1、创建仓库
+先用svnadmin在存放仓库的目录中创建必须的文件，以形成仓库。 　
+
+svnadmin create /var/svn/repos/
+创建的文件和目录有：
+ll -a /var/svn/repos/
+
+2、设置授权
+通过svn协议访问远端的仓库，必须建立授权关系。
+svnserve对于每个仓库，都有一个独立的配置文件和独立的用户、权限管理。
+该文件存放在：repository-path/conf/svnserve.conf
+
+vi /var/svn/repos/conf/svnserve.conf
+[general]
+anon-access = read # 允许匿名用户只读访问，若设置为none表示不允许匿名访问
+auth-access = write # 通过验证的用户可以读和写
+password-db = passwd # 用户保存文件，也可以使用绝对路径来指定位置
+authz-db = authz # 权限管理文件
+realm = My First Repository # 仓库名称
+
+可通过man svnserve.conf 获取帮助信息。
+注意: 配置项前面不能有前置空格，否则后续执行svn命令时，会报Option expected错误
+
+vi /var/svn/repos/conf/passwd
+[users] # 这是固定格式
+linuxing = redflag # linuxing是用户名，redflag是明文表示的密码
+harry = harryssecret
+
+允许访问该仓库的用户都可以在这文件中定义，而对应用户的权限，则在权限配置文件中定义：
+
+vi /var/svn/repos/conf/authz
+[groups] # 这是固定格式
+users1 = linuxing,harry # 定义属于组的用户
+
+可定义仓库中的某个相对路径，如[/]，或[/project1]
+若是多个仓库共享一个权限文件，可以用仓库名加“:”开头来定义，如：[project2:/]
+这个project2必须是已经由svnadmin create /path/project2 创建好的仓库
+[test:/] 
+linuxing = rw # 定义某个用户的权限，r是只读、w是可写、留空是不允许访问
+@users1 = rw # 定义某个组的权限
+
+= r # 用“*”号表示其他用户
+用户和权限配置文件必须与svnserve.conf中设置的路径相同。若把这两个配置文件放在仓库外，例如：/etc/svn/目录，则允许多个仓库共享同样的配置文件。
+用户和权限配置文件保存后即可生效，不需重启svnserve服务。
+
+3、访问仓库
+在保证远端svnd服务已经启动的情况下：
+　
+
+service svnd start Starting svnd: [确定]
+service svnd status svnserve (pid 21869) 正在运行...
+netstat -ln|grep 3690 tcp 0 0 :::3690 :::* LISTEN
+Linux下，默认会先以当前用户去验证，若用户名不匹配，可在后续的提示中输入指定的用户名。
+输入一次用户名后，svn会把验证结果保留在本地的~/.subversion/auth/svn.simple目录中，下次使用svn时，就不需要再做验证工作了。

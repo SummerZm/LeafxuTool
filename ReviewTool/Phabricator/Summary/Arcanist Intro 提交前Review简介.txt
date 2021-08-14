@@ -1,0 +1,54 @@
+Arcanist Intro 提交前Review简介
+Updated 166 Day(s) Ago所有用户
+操作
+提交前Review简介
+A. 工作流
+a. 开发人员用自己的svn账号checkout代码到本地开发修改(可以通过svn://协议; https://理论上也行没试过)
+b. 提交代码时使用 arc diff 提交review 请求
+c. reviewer在 phabricator主页-->Differentail 可以看到相应的请求。
+d. 批阅通过后，开发人员执行arc commit --revision "Diff id", 将代码提交SVN。
+
+B. arcanist工具部署
+a. arcanist工具部署在员工本地电脑上。可以部署在window或linux上。
+b. linux上部署arcanist
+
+下载arcanist源码。https://github.com/phacility/arcanist.git
+解压并给予合适的权限
+配置环境变量。 vi ~/.bashrc 添加： export PATH=$PATH:/somewhere you arcanist in/arcanist/bin
+设置默认编辑器 arc set-config editor "vim"
+尝试执行 arc help。 如果报错，检查php环境是否缺失相应的拓展(php-curl, php-mbstring,..)
+若成功，在自己的svn项目下创建.arcconfig文件，并写一下内容(建议将这文件，提交到svn上管理)
+			{	
+				"phabricator.uri": "<your phabricator uri>"   
+			}
+
+		7. 安装项目证书，用于phabricator的认证。 
+			a. 执行: arc install-certificate
+			b. 提示: 访问web网页 http://192.168.1.253:20001/conduit/login/
+			c. 访问并复制Token
+			d. 黏贴到命令行，回车
+c. window上部署arcanist
+
+		相关链接: https://blog.csdn.net/rilyu/article/details/37379873
+C. arcanist使用简介
+a. 运行arc diff可得，一个打开的vim
+
+		<<Replace this line with your revision title>  写Title，可以写修正什么Bug，完成什么任务等
+			Summary:   本次Diff的描述
+			Test Plan:  测试计划，没有的话写NA，不然提示问题
+			Reviewers:	谁帮你看代码
+			Subscribers:  这件事情要让那些人知道
+
+		# NEW DIFFERENTIAL REVISION
+		# Describe the changes in this new revision.
+		#
+		# arc could not identify any existing revision in your working copy.
+		# If you intended to update an existing revision, use:
+		#
+		#   $ arc diff --update <revision>
+b. 填写完,退出vim. 等待review通过
+c. review通过后执行，arc commit提交svn
+d. 注意: 文件编码为GBK时，必须使用 arc diff -encoding GBK提交review请求
+e. 默认：arc diff . --encoding GBK
+f. 修改已存在的diff: arc diff . --update DiffId --encoding GBK
+g. 创建新的diff: arc diff . --create --encoding GBK

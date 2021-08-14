@@ -1,0 +1,45 @@
+Diffusion Intro 提交后审核原理
+Updated 167 Day(s) Ago所有用户
+操作
+提交后审核原理
+A. webs端发送向后台请求，获取svn信息
+---> a. 请求到服务器后，由www-data或daemon用户处理
+---> b. www-data或daemon用户通过 svn+ssh://协议向svnserve服务请求数据
+---> c. 将数据返回web端
+
+B. 问题：b过程中有几个细节需要注意
+---> 1. svn+ssh:// 不支持加端口号需要对svn进行配置
+---> 2. 需为www-data或daemon用户生成公钥，放到phabricator用户的.ssh/authorized_keys文件中
+---> 3. svn+ssh:// 访问的是svn的实际本地路径
+
+C. 本质：
+提交后审核模块读取svn log信息，进入phabricator自身用户管理流程(并不会更改svn的数据)，显示到webs。
+phabricator用户和svn用户必须同名。
+
+D. 使用：
+
+进入Diffusion -> 点击右上角 Create Repository
+点击第三个 Create Subversion Repository
+填写仓库名，然后点击 Create Repository
+点击URIS，禁用自动生成的URI，操作方式如下：
+		a. 点击自动生成的URI
+		b. 点击右边 Edit URI
+		c. 设置I/O Type  ---> NO I/O
+		d. 设置Display Type  ---> Hidden
+		e. 保存
+回到Manage页面点击URIS，点击New URI创建新URI
+		a. 设置I/O Type ---> observe
+		b. 设置Display Type ---> visible
+		c. 填写svn仓库路径
+			eg: svn+ssh://phabricator@192.168.1.253:/work/svnroot/projects/
+		d. 保存
+回到Manage页面点击Basic, 点击Action, 点击Acticy Repository，然后点击update now
+如何进入仓库的Manage页面
+		a. 进入phabricator主页面
+		b. 点击Diffision
+		c. 选择并进入仓库
+		d. 点击Action，选择Manage
+Manage简介
+		a. Basic 基本状态
+		b. Policies 用户权限控制
+		c. Subversion 仓库显示哪些目录设置

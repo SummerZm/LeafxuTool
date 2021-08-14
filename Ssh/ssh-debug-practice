@@ -1,0 +1,25 @@
+SVN+SSH 搭建调试相关命令
+Updated 167 Day(s) Ago所有用户
+操作
+SSH调试模式
+ssh客户端调试模式
+ssh -p 22222 -T -vvv phabricator@192.168.1.253
+
+ssh服务端调试模式
+/usr/sbin/sshd -d -f /etc/ssh/sshd_config.phabricator
+
+SVN+SSH协议工作方式全解析，
+以Sourceforge为例讲解如何在Windows下配置TortoiseSVN和Subclipse访问SVN+SSH协议的Repository
+https://blog.csdn.net/bluishglc/article/details/8705864
+
+SSH debug模式讲解
+https://www.cnblogs.com/MYSQLZOUQI/p/4883519.html
+
+phabricator调试
+A. web界面调试
+在搜索框输入daemon进入，web页面调试模块
+
+B. 命令行调试
+
+到项目安装目录，这里是 /work/projects/test/phabricator
+执行命令： ./bin/config/phd log --id xx （查看的守护进程的日志， id值可从web调试模块获得）
