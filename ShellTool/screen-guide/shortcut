@@ -1,0 +1,20 @@
+Screen 窗口快捷键  --  [ctrl-a触发screen视窗命令] 
+1. C-a ？--> 显示所有快捷键信息 ---> [*]
+2. C-a c --> 运行一个新的shell 
+3. C-a n --> 下一window
+4. C-a p --> 上一window
+5. C-a x --> 锁住window 需要密码
+6. C-a k --> 杀掉当前window     ---->  [*]
+7. C-a z --> 把shell放到后台执行，fg返回  ----> [*]
+8. C-a [ --> 进入copy模式
+9. C-a w --> 列出当前所有会话
+a. C-a t --> 列出系统时间
+b. C-a | --> 垂直分屏
+c. C-a S --> 水平分屏
+d. C-a tab -->  切屏
+e. C-a d --> 暂时中断会话[screen -x 返回] ----> [*]
+f. C-a :remove --> 关闭当前窗口
+g. C-a :only --> 移除所有窗口除了当前
+
+
+

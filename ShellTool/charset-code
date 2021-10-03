@@ -1,0 +1,21 @@
+conv命令 gbk 转 UTF-8
+-------------------------------------------------------
+iconv用法: 
+	a. iconv -f "gbk" -t "utf-8" < infile > outfile
+	b. piconv -f "gbk" -t "utf-8" < infile > outfile
+	ex. iconv -f utf-8 -t GBK  123456.txt
+
+  
+对传文件的服务器编码不一样, 将脚本里加上转码
+
+----------utf-8转成GB18030----------
+
+for file_error in `cat $TMP_FILE_NAME_ERROR.list`
+do
+echo $file_error
+MOVE_FILE $file_error
+find ./ -type f -name $file_error | xargs iconv -f UTF-8 -t GB18030 > Temp.txt
+mv Temp.txt $file_error
+perl -pi -e 's/\cM//gs' $file_error
+INSERT_BILL_FILE_INFO TERMSUBSIDYCHKDIRDESfile_error $SERVICE_ID_ERROR
+done

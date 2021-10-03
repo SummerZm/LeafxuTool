@@ -1,0 +1,151 @@
+cygwin
+在windows下安装 ffmpeg 的最好方式就是使用Cygwin。 Cygwin是什么呢？简单的说，就是在 Windows上装了一个Linux模拟器。然后你可以在这个模拟器上按照Linux的方式操作 Windows系统。因此，Windows安装了Cygwin之后，你就把它当Linux用就可以了。
+
+既然在Windows上装Cygwin之后，可以像Linux一样操作，那当然编译ffmpeg也就相当的方便了。下面我们就开始安装它吧。
+
+首先，到 Cygwin官网下载 Cygwin 的可执行程序 setup-x86_64.exe。当然，它是 64位的，如果你现在还在用 32位的，那请在 Cygwin官网上找 32位对应的版本。
+
+第二步安装Cygwin。安装 Cygwin的操作非常简单，就是下一步，下一步。但
+需要注意一点，在安装的时候我们需要将必须的包安装上。主要有下面几个包：
+1. gcc
+2. g++
+3. make
+4. cmake
+5. automake
+6. gdb
+7. nasm
+8. yasm
+9. wget
+
+这几个包如何安装呢？要在选择安装包的界面里选"Full"选项，它表式在所有的可安装包里选择，然后在搜索框里填入上面的关键字就可以搜索到了。经过上面的步骤你应该已经成功将 Cygwin 安装到你的 Windows 系统上了。
+安装 apt-cyg
+虽然我们上面安装好了 Cygwin，但还是很不方便，为什么呢？主要是因为 Cygwin目前设计的还不是很人性化。如果我们安装好Cygwin后，如果缺少了某个包想安装的话就特别麻烦。还需要重新安装 Cygwin才能解决，有没有更好的方式呢？
+
+你遇到的困难，别人也会遇到，不同的是你要么忍了，要么不用了。可别人遇到困难后会去解决困难，这才是人与人之间最大的不同。
+
+话扯的有点远哈。没错，已经有人帮我们解决了这个问题。这是一个很好用的开源工具，它叫 apt-cyg。它与 Ubuntu系统中的 apt一样特别好用，而且使用的方式与 apt也是一个样子的。
+
+如何安装它呢？网上有很多方法，但很多不可行。大家按我这个方法操作一定可以安装成功。
+
+其实，apt-cyg就是一个脚本。我们只需要将这个脚本下载下来就OK了。这里是apt-cyg的下载地址。大家可以在Cygwin下执行下面的命令就好了。
+
+第一步：
+wget -c https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
+第二步
+install apt-cyg /bin
+有了这个神器，我们就可以安装一些Linux下的常用命令了，是不是很爽？
+
+比如我们要装某个包就可以用 apt-cyg instal xxx这样来安装了。
+
+安装pkg-config工具
+==============================================
+在Windows系统下，一般不会默认安装该工具，所以在Windows下做实验的同学大都会遇到明明已经装了某个库，但仍然找不到该库的情况。其原因就是没有安装 pkg-config这个工具。
+
+首先确认是否已经将 pkg-config工具安装好了。可以执行下面的命令：
+
+pkg-config
+如果提示没有安装，则先将该工具安装好，安装命令如下：
+
+apt-cyg install pkg-config
+编译安装 ffmpeg
+先别高兴的太早，虽然有了apt-cyg这个神器，但它目前只能安装Linux下的一些常用命令，像我们编译时需要的 x264, x265这些库它是无法找到的。
+
+不能找到的原因也很简单，是由于没有人把编译好的库放到apt-cyg 可以够到的源上。
+
+没有办法，所以我们还必须要用最原始的方法，下代码自己进行编译。下面我们就一步一步的来吧
+
+编译 yasm
+============================================
+wget http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz
+tar zxvf yasm-1.3.0.tar.gz
+cd yasm-1.3.0
+./configure
+make && sudo make install
+
+编译 fdk-aac
+================================================
+wget https://jaist.dl.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-0.1.6.tar.gz
+tar xvf fdk-aac-0.1.6.tar.gz
+cd fdk-aac-0.1.6
+./configure
+make && sudo make install
+
+安装lame
+==================================================
+wget http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
+tar -xzf lame-3.99.5.tar.gz
+cd lame-3.99.5
+./configure
+make && sudo make install
+
+注：编译lame遇到的问题：
+
+问题一：
+在Cygwin下安装 lame的时候遇到执行 ./configure 失败的情况。如 "error: cannot guess build type; you must sepcify one"，对这个问题可以通过下面的步骤来解决：
+安装automake。可以通过 which automake来确认automake 是否已经安装。如果没有安装，可以通使用 apt-cyg install automake进行安装。
+确认automake当前版本。可执行automake --version获取当前automake的版本号。
+将 lame目录下的 config.guess文件替换为 /usr/share/automake-version下的config.guess 文件。
+此时，再执行./configure进就可以下成功了。
+问题二：
+make时出现 "error: '_O_BINARY' undeclared (first use in this function)"的错误，解决办法如下：
+打开出错文件 vi ./frontend/lametime.c
+将下面这段代码注释掉
+/*
+#elif defined __CYGWIN
+setmod(fileno(fp), _O_BINARY);
+*/
+再执行make就可以成功了。
+
+安装nasm
+===========================================================
+wget https://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.gz
+tar xvf nasm-2.13.03.tar.gz
+cd nasm-2.13.03
+./configure
+make && sudo make install
+
+安装x264
+=======================================================
+wget http://mirror.yandex.ru/mirrors/ftp.videolan.org/x264/snapshots/last_x264.tar.bz2
+bunzip2 last_x264.tar.bz2
+tar -vxf last_x264.tar
+cd last_x264
+./configure --enable-static --enable-shared --disable-asm --disable-avs
+make && sudo make install
+
+安装ffmpeg
+=========================================================
+从ffmpeg官网下载代码编译, 编译方法如下：
+wget -c https://ffmpeg.org/releases/ffmpeg-4.0.2.tar.bz2
+bunzip2 ffmpeg-4.0.2.tar.bz2
+cd ffmpeg-4.0.2
+./configure --prefix=/usr/local/ffmpeg --enable-gpl --enable-small --arch=x86_64 --enable-nonfree --enable-libfdk-aac --enable-libx264 --enable-filter=delogo --enable-debug --disable-optimizations --enable-shared
+make && sudo make install
+
+FFmpeg编译的问题
+========================================================
+问题一：找不到 fdk-aac库
+
+在编译ffmpeg时，有可能会报找不到fdk_aac库的错误。此时我们应该设置一下 PKG_CONFIG_PATH，指定ffmpeg到哪里找我们安装好的库。
+
+上面通过源码安装的库，默认地址为/usr/local/lib下面，当然你可以通过./configure 中的–prefix参数改变这个目录。
+
+如果使用默认路径的话，可以通过下面的命令来指定编译时去哪里找库
+
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig
+如果你改变了默认路径，则将后面的 /usr/local/lib/pkgconfig修改为你变更后的路径/xxx/.../lib/pkgconfig即可。
+
+小结
+通过上面的步骤我们就可以成功的从 Window上编译出我们可以执行的 ffmpeg了。
+
+需要注意的是，ffmpeg是高度可订制的，你可以根据自己的需要编译出支持不同编解码的ffmpeg库，但方法都是一样的。（不知这句话同学们是否真正理解？）
+
+总的思路就是ffmpeg缺什么库，我们就下载相应库的源码给它编译好。然后增加ffmpeg相应的配置选项，再重新编译 ffmpeg。
+
+有了上面的知识，我们也可以编译出支持 x265的ffmpeg了，对不对？千万不要告诉我你还不会哟！
+
+
+作者：音视频_李超
+链接：https://www.imooc.com/article/247113
+来源：慕课网
+本文原创发布于慕课网 ，转载请注明出处，谢谢合作

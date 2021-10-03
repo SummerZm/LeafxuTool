@@ -1,0 +1,7 @@
+Screen 配置
+1. 配置文件位置: ~/.screenrc
+2. 设置不闪屏: vbell off
+3. 设置滚屏: [设置C-k，进入copy模式]
+	bindkey "^k" eval "copy" "stuff k"    # enter copy mode and move up one line
+	bindkey -m "^k" stuff k               # move up one line
+	

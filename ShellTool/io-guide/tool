@@ -1,0 +1,15 @@
+A. 用lsof查看某块磁盘上的读写进程: lsof /dev/xvda2 |head
+B. 用lsof查看某块磁盘上的读写进程IO读写文件: lsof -p 32597
+C. 通过cat /proc/pid/io 获取进程的io信息: cat /proc/4140/io
+D. 通过iostat/iotop获取进程的io速度信息: iostat 
+E. 通过echo 1 > /proc/sys/vm/block_dump ，来把 block 读写（WRITE/READ/DIRTY）状况 dump 到日志里，通过 dmesg 命令来查看 
+	#!/bin/sh
+	/etc/init.d/syslog stop
+	echo 1 > /proc/sys/vm/block_dump
+	sleep 60
+	dmesg | awk '/(READ|WRITE|dirtied)/ {process[$1]++} END {for (x in process) \
+	print process[x],x}' |sort -nr |awk '{print $2 " " $1}' | \
+	head -n 10
+	#dmesg | egrep "READ|WRITE|dirtied" | egrep -o '([a-zA-Z]*)' | sort | uniq -c | sort -rn | head
+	echo 0 > /proc/sys/vm/block_dump
+	/etc/init.d/syslog start

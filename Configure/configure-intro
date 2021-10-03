@@ -1,0 +1,162 @@
+Configure文件学习
+--------------------------------------------------------
+configure通常是由autoconf这个工具生成的，下载：sudo  apt-get  install  autoconf。
+autoconf：只是autotools系列工具中的一个，运行之后可对configure.in脚本配置文件进行处理进而生成configure可执行文件。
+aclocal：生成一个名称为aclocal.m4的用于处理本地宏定义的文件
+autoscan：在给定目录以及其子目录树中检测源文件，若没有给定目录，就是在当前目录及其子目录树中检查。
+autoheader：负责生成config.in文件，该工具通常从“acconfig.h”文件中复制用户附加的符号定义。
+automake：它的脚本配置文件是makefile.am（需用户自己创建），然后利用automake工具转换成makefile.in，运行configure自动配置设置文件就可将该.in文件生成makefile文件。
+
+工作流程：
+-----------------------------
+环境：ubuntu14.04
+编辑一个文件，命名为hello.c
+#include<stdio.h>
+#include<sys/time.h>
+int main(int argc,char *argv)
+{
+	float sec;
+	struct timeval time;
+	gettimeofday(&time,NULL);
+	sec=time.tv_sec;
+	sec+=time.tv_usec/1000000.0;
+	printf("hello-world\n sec=%e\n",sec);
+	return 0;
+}
+
+1. 运行autoscan，它会自动搜寻指定目录（默认是当前或者当前目录的子目录）的源文件，并且创建configure.scan， autoscan.log文件。
+
+	autoscan.log显示一个宏被请求的信息日志
+	----------------------------------------
+
+	configure.scan 文件
+	---------------------
+	autoscan会尝试读入”configure.ac”（同configure.in的配置文件）文件，此时没有创建该配置文件，于是它会自动生成“configure.in”的原型文件“configure.scan”，
+	该文件和源文件是在同一个目录下的，用户可以通过cat命令查看：
+
+		AC_PREREQ(2.61)
+		AC_INIT(hello, 1.0)
+		AM_INIT_AUTOMAKE(hello, 1.0)
+		AC_CONFIG_SRCDIR([hello.c])
+		AC_CONFIG_HEADER([config.h])
+		# Checks for programs.
+		AC_PROG_CC
+		# Checks for libraries.
+		# Checks for header files.
+		AC_CHECK_HEADERS([sys/time.h])
+		# Checks for typedefs, structures, and compiler characteristics.
+		AC_HEADER_TIME
+		# Checks for library functions.
+		AC_CHECK_FUNCS([gettimeofday])
+		AC_CONFIG_FILES([Makefile])
+		AC_OUTPUT
+		
+	AC_INIT([FULL-PACKAGE-NAME], [VERSION], [BUG-REPORT-ADDRESS])改为AC_INIT(hello, 1.0)；在AC_CONFIG_SRCDIR([hello.c])之后加上AM_INIT_AUTOMAKE(hello, 1.0)
+	AC_OUTPUT之前加上AC_CONFIG_FILES([Makefile])，修改完后执行mv configure.scan configure.ac。
+		
+	解释-----
+		AC_PREREQ：这个宏用于声明本文件要求的autoconf版本
+		AC_INIT：总是configure.in中的第一个宏，可以拓展为许多可由其他configure脚本共享的模板文件代码，这些代码解析传到configure的命令行参数。
+				 这个宏的一个参数是一个文件名，这个文件应该在源代码目录中，用于健全性检查，以保证configure脚本已正确定位源文件目录。
+				 
+		AM_INITAUTOMAKE：automake必备的宏，使automake自动生成Makefile
+		AC_CONFIG_SRCDIR：检查所指定的源文件是否存在，以及源代码目录的有效性。
+		AC_CHECK_HEADERS：用于生产config.h文件供autoheader使用
+		AC_CONFIG_FILES：用于生成相应的Makefile
+		AC_PROG_CC：使配置脚本搜索C编译器并使用其名称定义变量CC。
+					Automake生成的src / Makefile.in文件使用变量CC构建hello，因此当配置从src / Makefile.in创建src / Makefile时，它将使用它找到的值定义CC。
+					如果要求Automake创建一个使用CC的Makefile.in，但是configure.ac没有定义它，它会建议你添加一个调用AC_PROG_CC
+
+		AC_OUTPUT：是一个关闭命令，实际上产生脚本的一部分，负责创建用AC_CONFIG_HEADERS和AC_CONFIG_FILES注册的文件
+		AC_CHECK_FUNCS：检查C标准库中是否存在函数。如果找到，则定义预处理器宏HAVE_ [function]。它生成一个测试程序，声明一个具有相同名称的函数，然后编译并链接它。
+					更改函数名称中的几个字符（使测试失败）并检查config.log，当测试程序失败时，您将看到测试程序的源代码。
+					假如缺失这个宏，会遇到下面的警告：
+						configure.ac: warning: missing AC_CHECK_FUNCS(gettimeofday)
+					这是autoscan告诉你，因为gettimeofday是一个潜在的可移植性问题，你应该有一个配置检查它。
+					所以你需要做的是添加 AC_CHECK_FUNCS（gettimeofday） 配置.ac，重新运行autoreconf，然后装饰你的C代码 #ifdef HAVE_GETTIMEOFDAY ，这是一般的过程
+
+		AC_HEADER_TIME：这个不是必要宏，当源代码中有依赖于time.h和sys/time.h时，则定义TIME_WITH_SYS_TIME。这个宏在使用例如struct
+					这个宏在使用例如struct timeval和struct  tm的程序中很有用，它最好结合HAVE_SYS_TIME_H一起使用，可以使用AC_CHECK_HEADERS检查它
+					你的c程序就可以添加下面的一段：
+					#if TIME_WITH_SYS_TIME
+					# include <sys/time.h>
+					# include <time.h>
+					#else
+					# if HAVE_SYS_TIME_H
+					#  include <sys/time.h>
+					# else
+					#  include <time.h>
+					# endif
+					#endif
+
+		旧版本的autoconf编译是用configure.in，但是现在推荐使用configure.ac，configure.ac里面的内容可以包含shell指令。
+		configure.ac中的宏最好是单独成行的，AC_INIT必须在check之前调用，而AC_OUTPUT必须在结尾调用，某些宏在运行的时候会检查一些另外宏是否已经先运行。
+		宏的顺序一般是这样的：
+			AC_INIT
+			测试程序
+			测试函数库
+			测试头文件
+			测试类型定义
+			测试结构
+			测试编译器特性
+			测试库函数
+			测试系统调用
+			AC_OUTPUT
+				
+2. 执行aclocal，生成aclocal.m4文件（告诉autoconf如何找到新的宏）
+3. 执行autoconf或autoconf  --install
+	假如遇到错误：possibly undefined macro: AM_INIT_AUTOMAKE
+	解决：sudo apt-get install libtool, 然后再autoconf
+	
+4. 执行autoheader，会生成一个config.h.in文件
+5. 创建一个脚本配置文件Makefile.am
+	AUTOMAKE_OPTIONS=foreign
+	bin_PROGRAMS=hello
+	hello_SOURCES=hello.c
+
+	说明：
+	AUTOMAKE_OPTIONS: 为设置automake的选项。GNU对自己发布的软件有严格的规范，例如必须附带许可证声明文件COPYING等，否则automake执行时会报错。
+		automake提供了3种软件等级：foreign、gnu和gnits，默认为gnu。这里使用foreign，只检测必须的文件
+		
+	bin_PROGRAMS: 定义要生成的可执行文件名。如果要产生多个可执行文件，每个可执行文件的文件名要用空格隔开。
+		对于可执行文件和静态库类型，如果只想编译，不想安装到系统中，可以用noinst_PROGRAMS代替bin_PROGRAMS，noinst_LIBRARIES代替lib_LIBRARIES。
+		
+	hello_SOURCES：用于定义“hello”这个可执行程序所需要的依赖文件，如果有多个，要全部列出来，用空格隔开。如果要生成多个执行程序，那么要定义多个filename_SOURCES
+
+6. 执行automake  -a，自动添加一些脚本并生成configure.in文件
+	如果遇到警告：
+	configure.ac:7: warning: AM_INIT_AUTOMAKE: two- and three-arguments forms are deprecated.  For more info, see:
+	configure.ac:7: http://www.gnu.org/software/automake/manual/automake.html#Modernize-AM_005fINIT_005fAUTOMAKE-invocation
+	configure.ac:12: installing './compile'
+	configure.ac:7: installing './install-sh'
+	configure.ac:7: installing './missing'
+	Makefile.am: installing './depcomp'
+	先到http://www.gnu.org/software/automake/manual/automake.html#Modernize-AM_005fINIT_005fAUTOMAKE-invocation 查看一下问题：
+	现在AM_INIT_AUTOMAKE只需要引入一个参数，一个空格分隔的automake选项列表应该应用到项目树中的每个Makefile.am。
+
+	旧的AM_INIT_AUTOMAKE配置：AM_INIT_AUTOMAKE（PACKAGE，VERSION，[NO-DEFINE]），有两个必需要的参数：PACKAGE,VERSION。包和版本可以从autoconf的AC_INIT宏获得。
+	但是和AC_INIT调用发生的情况不同，AM_INIT_AUTOMAKE调用支持包和版本参数中的shell变量扩展，也就是AM_INIT_AUTOMAKE支持Makefile中引入shell指令
+	解决：编辑configure.ac
+		方法1：将AM_INIT_AUTOMAKE的参数取消
+		方法2：默认情况下，这个宏AC_DEFINE的PACKAGE和VERSION。这可以通过传递no-define选项来避免
+			AM_INIT_AUTOMAKE([no-define ...])
+		不过这样也不是最稳妥的，链接的文章后面提到。
+
+7. 执行./configure，它将makefile.in文件生成Makefile文件。
+8. 最后执行make，生成了可执行文件hello
+
+资料：
+------------------------
+GNU Autoconf, Automake and Libtool（http://www.shlomifish.org/lecture/Autotools/slides/）
+automake（http://www.gnu.org/software/automake/manual/automake.html#index-AC_005fINIT）
+autoconf（https://www.gnu.org/software/autoconf/manual/autoconf.html#Shell-Script-Compiler）
+GNU Document(http://www.delorie.com/gnu/docs/)
+使用autotools生成makefile文件入门（http://www.cnblogs.com/flatfoosie/archive/2010/12/21/1912946.html）
+Makefile学习与进阶之Makefile.am和$$(M)的意思（http://www.cnblogs.com/zmlctt/p/4161547.html）
+GNU  AutoMake的中文翻译（http://blog.csdn.net/brace/article/details/726168）
+Autoconf学习---编写configure脚本（http://www.cnblogs.com/flyfish10000/articles/1986054.html）
+例解autoconf和automake生成makefile文件（https://www.ibm.com/developerworks/cn/linux/l-makefile/）
+configure.ac(configure.in)详解（http://www.ivpeng.com/pblog/configure-ac.html）
+Makefile.am规则和实例详解（http://www.ivpeng.com/pblog/makefile-am.html）
+Configure文件学习 https://www.cnblogs.com/simonid/p/6374306.html
+

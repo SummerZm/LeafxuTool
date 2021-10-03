@@ -1,0 +1,37 @@
+grep命令：
+
+	-v : 反向选择。
+	-n : 显示行号。
+	-i ：忽略大小写。
+	-c : 显示出现的行数。
+	-a : 将binary文件以text文件的方式搜索文件。
+	
+1. grep 显示关键字所在的行
+
+	grep -n root /etc/pass    【把pass文件中有root的行输出来并显示行号】
+
+
+2. 添加颜色配置方案：
+
+	 A. 编辑： ~/.bashrc
+	 B. 添加： alias grep = 'grep --color=auto'
+	 C. source ~/.bashrc 生效
+	 
+
+3. 显示关键字的前3行，后2行
+
+	dmesg : 显示核心信息
+	
+	dmesg | grep -n -A3 -B2 'eth'
+	
+	
+4. 当前目录下递归查找 
+	
+	grep -r  'ff'  *   
+	
+	
+5.	.(小数点)：代表『一定有一个任意字节』的意思；
+	 * (星号)：代表『重复前一个字符， 0 到无穷多次』的意思，为组合形态
+	  
+	  
+6.   grep -n '^$' regular_express.txt   // 查找空行  有什么开头， 结尾

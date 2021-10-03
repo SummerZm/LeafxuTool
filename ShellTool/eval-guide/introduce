@@ -1,0 +1,11 @@
+1. eval用于二次扫描
+	ex: test.txt内容：hello shell world!
+	  myfile="cat test.txt"
+	  echo $myfile			#result:cat test.txt
+	  eval echo $myfile		#result:hello shell world!
+
+2. eval不支持嵌套
+
+3. 其他【未测试验证】
+	echo "Last argument is $(eval echo \$$#)"
+	echo "Last argument is $(eval echo $#)"

@@ -1,0 +1,713 @@
+https://blog.csdn.net/brace/article/details/726168
+
+@dircategory GNU admin @direntry * automake: (automake). Making Makefile.in's
+@dircategory Individual utilities @direntry * aclocal: (automake)Invoking aclocal. Generating aclocal.m4
+Copyright (C) 1995, 96 Free Software Foundation, Inc.
+这是GNU Automake文档的第一版，并且是针对GNU Automake 1.3的。
+
+Permission is granted to make and distribute verbatim copies of this manual provided the copyright notice and this permission notice are preserved on all copies.
+Permission is granted to copy and distribute modified versions of this manual under the conditions for verbatim copying, provided that the entire resulting derived work is distributed under the terms of a permission notice identical to this one.
+Permission is granted to copy and distribute translations of this manual into another language, under the above conditions for modified versions, except that this permission notice may be stated in a translation approved by the Free Software Foundation.
+只要版权声明和本许可声明保留在所有副本中，您就被授权制作和发行本手册的原文副本。
+只要整个最终派生工作按照与本手册相同的许可声明发行，您就被授权按照与发行原文相同的条件复制和发行本手册的修改版本。
+除了本许可声明应该使用由基金会批准的译文之外，您被授权按照与上述修改版本相同的条件复制和发行本手册的其它语言的译文。
+
+Introduce
+------------------------------
+Automake是一个从文件'Makefile.am'自动生成'Makefile.in' 的工具。生成的'Makefile.in's服从GNU Makefile标准。
+Automake需要perl用于生成'Makefile.in'。但是由Automake创建的发布完全服从GNU标准，并且在创建中不需要perl。
+Automake在几个方面对一个项目做了限制；例如它假定项目使用Autoconf，并且对'configure.in'的内容施加了某些限制。 
+Automake输入文件是一系列简单的宏定义(Makefile.am文件)。
+Makefile.am基本上是一系列make的宏定义（make规则也会偶尔出现）。
+ 
+Automake how to work
+---------------------------
+Automake读入'Makefile.am'并且生成'Makefile.in'。
+Automake不能识别GNU对make的扩展。在'Makefile.am'中使用这些扩展将导致错误或者令人不解的行为。
+Automake允许给出不被复制到输出中的注释；所有以'##'开头的行将被Automake彻底忽略。
+Makefile.am中定义的一些宏和目标（targets）指挥automake生成更多特定的代码；例如一个'bin_PROGRAMS'宏定义将生成一个需要被编译、连接的目标。
+Makefile.am中定义的目标通常覆盖了所有由automake自动生成的拥有相似名字的目标。最好避免使用它。
+Makefile.am中的宏定义和目标被复制到生成的文件中。这使得你可以把任何代码添加到生成的'Makefile.in'文件中。
+
+Automake directory
+----------------------------------
+一个flat（平）包指的是所有文件都在一个目录中的包。为这类包提供的'Makefile.am' 缺少宏SUBDIRS。这类包的一个例子是termutils。
+一个deep（深）包指的是所有的源代码都被储存在子目录中的包；顶层目录主要包含配置信息。GNU cpio 是这类包的一个很好的例子，GNU tar也是。deep包的顶层'Makefile.am'将包括宏SUBDIRS。
+一个shallow（浅）包指的是主要的源代码储存在顶层目录中，而各个部分（典型的是库）则储存在子目录中的包。Automake本身就是这类包（GNU make也是如此，它现在已经不使用automake）。
+
+严格性
+--------------------------------
+Automake的目的是用于维护GNU包，它为适应那些希望使用它的人做出了一些努力，但并不指望应用所有的GNU惯例。
+按照这个目标，Automake支持三级严格性---严格性指的是Automake将如何检查包所服从的标准。
+
+严格性级别：
+'foreign': Automake将仅仅检查那些为保证正确操作所必需的事项。
+'gnu': Automake将尽可能地检查包是否服从GNU标准。这是缺省设置。
+'gnits': Automake将按照还没有完成的Gnits标准进行检查。它们是基于GNU标准的，但更加详尽。除非你是Gnits标准的参与奉献者，我们建议您在Gnits标准正式出版之前不要使用这一选项。
+
+统一命名机制(Unified naming mechanism)
+--------------------------------------------------
+Automake变量通常服从统一的命名机制，以易于确定如何创建和安装程序（和其它派生对象）。这个机制还支持在运行configure的时候确定应该创建那些对象。
+
+主变量(primary): 运行make时, 被用于确定应该创建哪些对象。
+	例如: 主变量PROGRAMS保存了需要被编译和连接的程序的列表。
+	可能的主变量名有'PROGRAMS'、'LIBRARIES'、 'LISP'、'SCRIPTS'、'DATA'、 'HEADERS'、'MANS'和'TEXINFOS'。
+
+目录变量: 在主变量之后命名, 用于确定应该把创建了的对象安装在哪里。
+	结构: 前缀_主变量(前缀指出那个标准目录将作为安装目录)。
+	Automake用pkglibdir、pkgincludedir和 pkgdatadir扩展了这个目录列表。
+	
+附加变量: 在主变量名之前加一个'EXTRA_'。该变量用于储存根据configure的运行结果。
+
+派生变量: Makefile变量名是从用户提供的某些文本中派生而来的。例如程序名被重写到Makefile宏名中。
+	Automake把这些文本规范化，以使它可以不必服从Makefile的变量名规则。
+	在名字中除了字母、数字和下划线之外的所有字符都将用下划线代替。
+	例如: 程序名为sniff-glue，派生出的变量名是sniff_glue_SOURCES，而不是sniff-glue_SOURCES。
+
+特殊前缀变量: 
+特殊前缀'noinst'表示根本不会安装这些有问题的对象。
+特殊前缀'check'表示仅仅在运行make check 命令的时候才创建这些有问题的对象。
+
+例如: 在配置时刻cpio确定创建哪些程序。一部分程序被安装在bindir，还有一部分程序被安装在sbindir：
+	EXTRA_PROGRAMS = mt rmt		#附加变量
+	bin_PROGRAMS = cpio pax		#目录变量
+	sbin_PROGRAMS = @PROGRAMS@
+	定义没有前缀的主变量（比如说PROGRAMS）是错误的。
+在构造变量名的时候，通常省略后缀'dir'；因此我们使用 'bin_PROGRAMS'而不是'bindir_PROGRAMS'.
+
+How to generate Makefile.in
+---------------------------------------------------------
+1. 更新你的'configure.in'以包含automake需要的命令。
+	在AC_INIT之后添加AM_INIT_AUTOMAKE：AM_INIT_AUTOMAKE(zardoz, 1.0)
+	如果程序zardoz使用了共享库等复杂的因素需要配置其他
+	
+2. 更新生成'configure'。告诉autoconf如何找到你使用的新宏。
+	A. 使用aclocal程序生成aclocal.m4。
+	B. 已有aclocal.m4, aclocal允许把之前aclocal.m4的宏放到 'acinclude.m4'中
+		mv aclocal.m4 acinclude.m4 && aclocal && autoconf
+	
+3. 为zardoz写的'Makefile.am'
+	bin_PROGRAMS = zardoz       #安装的地方。
+	zardoz_SOURCES = main.c head.c float.c vortex9.c gun.c
+	zardoz_LDADD = @LIBOBJS@    #你的configure.in脚本使用AC_REPLACE_FUNCS，因此需要与'@LIBOBJS@'连接。
+	info_TEXINFOS = zardoz.texi #zardoz的Texinfo文档
+		
+4. 运行automake --add-missing以生成你的'Makefile.in' 并且得到任何可能需要的附加文件。
+
+Use automake to create GNU Hello
+--------------------------------------------------------------------------------------------------
+GNU Hello是国际化的，进行选项处理，并且含有一个手册和一个测试套件。GNU Hello是一个deep包。
+
+1. GNU Hello的'configure.in'：
+	## Process this file with autoconf to produce a configure script.
+	AC_INIT(src/hello.c)
+	AM_INIT_AUTOMAKE(hello, 1.3.11)
+	AM_CONFIG_HEADER(config.h)
+
+	## Set of available languages.
+	ALL_LINGUAS="de fr es ko nl no pl pt sl sv"
+
+	## Checks for programs.
+	AC_PROG_CC
+	AC_ISC_POSIX
+
+	## Checks for libraries.
+	## Checks for header files.
+	AC_STDC_HEADERS
+	AC_HAVE_HEADERS(string.h fcntl.h sys/file.h sys/param.h)
+
+	## Checks for library functions.
+	AC_FUNC_ALLOCA
+
+	## Check for st_blksize in struct stat
+	AC_ST_BLKSIZE
+
+	## internationalization macros
+	AM_GNU_GETTEXT
+	AC_OUTPUT([Makefile doc/Makefile intl/Makefile po/Makefile.in /
+			   src/Makefile tests/Makefile tests/hello],
+	   [chmod +x tests/hello])
+	   
+	宏'AM_'由Automake(或者Gettext库)提供；其它的是标准Autoconf宏。
+
+2. 顶层'Makefile.am':
+	EXTRA_DIST = BUGS ChangeLog.O
+	SUBDIRS = doc intl po src tests
+	'po'和'intl'目录是gettextize自动生成的；在这里我们不讨论它们。
+
+3. 'doc/Makefile.am':
+	info_TEXINFOS = hello.texi
+	hello_TEXINFOS = gpl.texi
+	它足以创建、安装并且发布Hello手册。
+
+4. 'tests/Makefile.am':
+	TESTS = hello
+	EXTRA_DIST = hello.in testdata
+	脚本'hello'是由configure生成的，并且仅仅在测试时才生成。 make check将运行这个测试。
+
+5. 'src/Makefile.am':
+	bin_PROGRAMS = hello
+	hello_SOURCES = hello.c version.c getopt.c getopt1.c getopt.h system.h 
+	hello_LDADD = @INTLLIBS@ @ALLOCA@
+	localedir = $(datadir)/locale
+	INCLUDES = -I../intl -DLOCALEDIR=/"$(localedir)/"
+	
+Example: create etags and ctags.
+---------------------------------------------------------------------------------------------------------
+如何从同一个源文件etags.c生成两个程序ctags和etags。(make隐显式规则导致的一些问题)
+		
+		
+创建'Makefile.in'
+--------------------------------------------------------------------------------------------------------
+automake将自动地寻找每个合适的'Makefile.am'，并生成相应的'Makefile.in'。
+automake假定包仅仅在顶层目录含有一个'configure.in'。若含有多个'configure.in'，则必须在每个含有'configure.in'的目录中运行automake。
+Makefile.am + configure.in + automake(工具) ==> Makefile.in
+
+automake接受以下选项：
+	-a
+	--add-missing # Automake要求一些通用文件在特定的位置存在。例如如果'configure.in'运行了AC_CANONICAL_HOST，就需要'config.guess'。 
+				  #通常如果Automake告诉你缺少文件，试一下本选项
+	--amdir=dir     #在dir中而不是安装目录中，寻找Automake数据文件，它通常用于调试。
+	--build-dir=dir #告诉Automake创建目录在那里。本选项在把依赖性添加到由make dist生成的'Makefile.in'中的时候使用；在其它情况下不应该使用它。
+	--cygnus   #按照Cygnus规则，而不是GNU或者Gnits规则。
+	--foreign  #把全局严格性设置成'foreign'。详情请参见严格性。
+	--gnits    #把全局严格性设置成'gnits'。详情请参见 --gnu和--gnits的效果
+	--gnu      #把全局严格性设置成'gnu'。详情请参见 --gnu和--gnits的效果。这是缺省严格性。
+	--include-deps  #包含生成的'Makefile.in'中所有自动生成的依赖信息（参见自动的依赖性跟踪）。通常在制作发布版本时使用；参见需要发布哪些文件。
+	--generate-deps #生成一个连接了所有自动生成的依赖信息的文件，'.dep_segment'。
+					#通常在制作发布版本时使用；参见需要发布哪些文件。在维护为其它平台所制作的'SMakefile'或者makefile（'Makefile.DOS'，等等，）时是有用的。
+					#它只能与--include-deps、--srcdir-name 和--build-dir一同使用。如果给出了本选项，不会实行任何其他处理。
+	--no-force        #通常automake创建在'configure.in'中提到的所有 'Makefile.in'。本选项仅仅更新那些按照它们的依赖性过时了的 'Makefile.in'。
+	--output-dir=dir  #把生成的'Makefile.in'放到目录dir中。通常每个'Makefile.in'在对应的'Makefile.am'所在的目录中创建。本选项被用于创建发布版本。
+	--srcdir-name=dir #告诉Automake与当前任务相关的源代码目录名。本选项在把依赖性引入由make dist生成的'Makefile.in'中时使用；它不应被用于其它情况。
+	--verbose         #让Automake打印关于被读入或创建的文件的信息。
+	--version         #打印Automake的版本号并且退出。
+
+1. automake通过处理configure.in定义的变量，生成软件包的信息
+	a. 用AC_SUBST定义变量PACKAGE和VERSION。 PACKAGE应该是在捆绑发布的时候使用的包的名称。 VERSION应该是被开发的版本的版本号。
+	b. 使用宏AC_ARG_PROGRAM安装一个程序或者一个脚本。
+	c. 包不是平（flat）的则使用使用宏AC_PROG_MAKE_SET。
+	d. 宏AM_SANITY_CHECK确认创建环境的完整性。
+	e. 如果包安装了任何脚本，使用宏AM_PROG_INSTALL。否则，使用AC_PROG_INSTALL。
+	f. 使用AM_MISSING_PROG以确认在创建环境中，程序aclocal、 autoconf、automake、autoheader 和makeinfo是否存在。
+		missing_dir='cd $ac_aux_dir && pwd'
+		AM_MISSING_PROG(ACLOCAL, aclocal, $missing_dir)
+		AM_MISSING_PROG(AUTOCONF, autoconf, $missing_dir)
+		AM_MISSING_PROG(AUTOMAKE, automake, $missing_dir)
+		AM_MISSING_PROG(AUTOHEADER, autoheader, $missing_dir)
+		AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
+
+2. Automake能够识别的其它事情
+	a. Automake能够识别某些宏的使用并且适当地修整生成的'Makefile.in'。
+		AC_CONFIG_HEADER
+		AC_CONFIG_AUX_DIR : 
+			Automake将在调用本宏命名的目录中寻找各种求助脚本，例如'mkinstalldirs'。
+			如果没找到，将在其它标准的位置（顶层目录中，或者在对应与当前'Makefile.am' 的源代码目录，任何一个都是合适的）中寻找脚本。
+
+		AC_CANONICAL_HOST
+		AC_CANONICAL_SYSTEM
+			它类似于AC_CANONICAL_HOST，此外还定义了'Makefile' 变量'build_alias'和'target_alias'。
+
+		AC_FUNC_ALLOCA
+		AC_FUNC_GETLOADAVG
+		AC_FUNC_MEMCMP
+		AC_STRUCT_ST_BLOCKS
+		AC_FUNC_FNMATCH
+		AM_FUNC_STRTOD
+		AC_REPLACE_FUNCS
+		AC_REPLACE_GNU_GETOPT
+		AM_WITH_REGEX
+			Automake将确认为对应于这些宏的对象生成了适当的依赖关系。此外，Automake将验证适当的源文件成为发布的一部分。
+			使用这些宏，Automake并不需要任何C源代码，所以automake -a 将不会安装源代码。
+
+		AC_PROG_RANLIB: 如果在包中创建了任何库，就需要它。
+		AC_PROG_CXX: 包含了任何C++源代码，就需要它。
+		AM_PROG_LIBTOOL: Automake将启动为libtool所做的处理（参见Libtool手册）。
+		AC_PROG_YACC: 如果找到了Yacc源文件，那么你必须使用这个宏或者在'configure.in' 中定义变量'YACC'。前者更好一些。
+		AC_DECL_YYTEXT: 如果在包中有Lex源代码，需要使用这个宏。
+		AC_PROG_LEX: 如果找到了Lex源代码，那么必须使用本宏。
+
+		AC_PATH_XTRA
+			Automake将把由AC_PATH_XTRA定义的变量的定义插入每个创建C程序或者库的'Makefile.in'中。
+
+		AC_CHECK_TOOL
+		Automake将确认'config.guess'和'config.sub'的存在。并且将引入'Makefile'变量'host_alias'和 'host_triplet'。
+
+
+		LIBOBJS
+			Automake将检测把'.o'文件添加到LIBOBJS中的语句，并且按照与在AC_REPLACE_FUNCS中发现的文件相同的方式处理这些附加的文件。
+
+		ALL_LINGUAS
+			如果Automake发现在'configure.in'中设置了该变量，它将检查目录'po'以确认所有命名了的'.po' 文件都是存在的，并且所有存在的'.po'文件都被命了名。
+
+		AM_C_PROTOTYPES: 使用自动de-ANSI-fication时，需要它。参见自动de-ANSI-fication。
+
+		AM_GNU_GETTEXT
+			使用了GNU gettext的包需要使用本宏。它将与gettext一起发布。如果Automake看到这个宏，Automake将确认包是否符合gettext的某些要求。
+
+		AM_MAINTAINER_MODE
+			该宏为configure添加一个'--enable-maintainer-mode' 选项。如果使用了本宏，automake将关闭在生成的 'Makefile.in'中缺省的“maintainer-only”规则。
+			在'Gnits'模式中，不允许使用本宏。（参见--gnu和--gnits的效果）。
+
+		AC_SUBST
+		AC_CHECK_TOOL
+		AC_CHECK_PROG
+		AC_CHECK_PROGS
+		AC_PATH_PROG
+		AC_PATH_PROGS
+			上述任意一个宏的第一个参数将在每个生成的'Makefile.in' 中自动地被定义为一个变量。
+
+自动生成aclocal.m4
+----------------------------------------------------------------------------------------
+Automake包含了许多可以给Autoconf使用的宏。必须在'aclocal.m4'中定义这些宏；否则autoconf将不能找到它们。
+
+1. 程序aclocal将基于'configure.in'的内容自动生成文件 'aclocal.m4'。它提供了一个不必四处寻找而获得Automake提供的宏的便利方式。
+2. aclocal机制是可以扩展的。
+	a. 启动时，aclocal扫描所有它能够找到的'.m4'文件，以寻找宏定义。
+	b. 然后它扫描'configure.in'。任何在第一步中提到的宏，以及它所需要的宏，将被放到'aclocal.m4'中。
+	c. 如果'acinclude.m4'存在，它的内容也会被自动包含在 'aclocal.m4'中。这对于把本地宏合并到'configure'是有用的。
+
+3. 由Automake提供给autoconf使用的宏
+	a. AM_CONFIG_HEADER : Automake将生成规则以自动地重新生成config头文件。如果你使用本宏，你必须在你的源代码目录中创建文件'stamp-h.in'。它可以为空。
+	b. AM_CYGWIN32: 检查本configure是否是在'Cygwin32'环境中运行。（FIXME xref）。如果是，把输出变量EXEEXT定义为 '.exe'；否则，把它定义为空字符串。
+		Automake识别该宏并且用它生成在'Cygwin32'中可以自动工作的'Makefile.in'。
+		在'Cygwin32'环境中，即使在命令行中没有明确指出，gcc 将生成文件名以'.exe'结尾的可执行文件。
+		Automake向 'Makefile.in'添加特定的代码以适当地处理它。
+
+	c. AM_FUNC_STRTOD
+		如果不能使用函数strtod，或者不能正确地工作（例如在SunOS 5.4上），就把'strtod.o'添加到输出变量LIBOBJS中。
+
+	d. AM_FUNC_ERROR_AT_LINE : 如果没有找到error_at_line函数，就把'error.o'添加到LIBOBJS中。
+	e. AM_FUNC_MKTIME : 检查函数mktime。如果没有找到，就把'mktime.o'添加到'LIBOBJS'中。
+	f. AM_FUNC_OBSTACK : 检查GNU obstacks代码；如果没有找到，就把'obstack.o'添加到'LIBOBJS'中。
+	g. AM_C_PROTOTYPES : 检查编译器是否可以识别函数原型。
+		如果可以识别，就定义'PROTOTYPES' 并且把输出变量'U'和'ANSI2KNR'设置为空。
+		否则，把'U'设置成'_'，并且把'ANSI2KNR' 设置成'./ansi2knr'。Automake使用这些值以实现自动de-ANSI-fication。
+
+	h. AM_HEADER_TIOCGWINSZ_NEEDS_SYS_IOCTL
+		如果使用TIOCGWINSZ需要'<sys/ioctl.h>'，那么定义GWINSZ_IN_SYS_IOCTL。否则，TIOCGWINSZ 可以在'<termios.h>'中发现。
+
+	j. AM_INIT_AUTOMAKE : 运行大部分'configure.in'需要的多个宏。本宏有两个参数，包名称和版本号....
+	l. AM_PATH_LISPDIR : 搜索程序emacs，并且，如果找到了，把输出变量lispdir 设置为到Emac的site-lisp目录的完整路径。
+	m. AM_PROG_CC_STDC :
+		本宏尝试在各种系统中选择标准C的各种选项。如果编译器正确地处理函数原型，它就认为编译器处于标准C模式。
+		如果你使用本宏，你应该在调用它之后检查C编译器是否被设置成接受标准C；如果不是，shell变量am_cv_prog_cc_stdc被设置成'no'。
+
+	n. AM_PROG_INSTALL : 类似与AC_PROG_INSTALL，但还定义了INSTALL_SCRIPT。
+	o. AM_PROG_LEX : 类似与带有AC_DECL_YYTEXT的AC_PROG_LEX，但在没有lex的系统上使用脚本missing。 'HP-UX 10'是一个这样的系统。
+	p. AM_SANITY_CHECK : 它检查并确保在创建目录中被创建的文件比源代码目录中的文件要新。在时钟设置不正确的系统中它可能失败。本宏在AM_INIT_AUTOMAKE 中自动运行。
+	r. AM_SYS_POSIX_TERMIOS :
+		检查系统中，是否可以使用POSIX termios头文件和函数。如果可以，就把shell变量 am_cv_sys_posix_termios设置为'yes'。
+		如果不能使用，就把am_cv_sys_posix_termios设置为'no'。
+
+	s. AM_WITH_DMALLOC : 
+		增加dmalloc包支持。如果用户用'--with-dmalloc'进行配置，那么定义WITH_DMALLOC并且把'-ldmalloc'添加到LIBS。
+		包dmalloc可以在ftp://ftp.letters.com/src/dmalloc/dmalloc.tar.gz 找到。
+
+	t. AM_WITH_REGEX : 
+		把'--with-regex'添加到configure的命令行中。
+		如果给出'--with-regex'（缺省设置），那么使用 'regex'常规表达式库，'regex.o' 被添加到'LIBOBJS'中，并且定义'WITH_REGEX'。
+		如果给出'--without-regex'，那么使用'rx' 常规表达式库，'rx.o'被添加到'LIBOBJS'中。
+
+	u. AM_TYPE_PTRDIFF_T : 如果类型'ptrdiff_t'是在'<stddef.h>'中定义的，就定义'HAVE_PTRDIFF_T'。
+
+4. 编写拓展的alocal宏
+	a. aclocal不含有任何宏的任何内置信息，所以扩展你自己的宏是十分容易的。
+	b. 一个宏文件应该是一系列AC_DEFUN'。aclocal还懂得AC_REQUIRE，所以把每个宏储存在一个单独的文件中是安全的。
+	c. 一个宏文件的文件名应该以'.m4'结尾。这类文件都应该安装在'$(datadir)/aclocal'中。
+
+顶层'Makefile.am'
+------------------------------------------------------------------------------------
+1. 在非平（non-flat）包中，顶层'Makefile.am'必须告诉Automake 应该在那个子目录中进行创建。这通过变量SUBDIRS来完成。
+2. 宏SUBDIRS保存了需要进行各种创建的子目录列表。在生成的'Makefile'中的许多目标（例如，all）即需要在本目录下运行，也需要在所有特定的子目录下运行。
+3. 需要指出，出现在 SUBDIRS中的子目录并不一定含有'Makefile.am' ；只要在配置（运行configuration）之后含有'Makefile'就行了。
+4. 在SUBDIRS中提到的目录必须是当前目录的直接子目录。例如，你可以把'src/subdir'添加到SUBDIRS中。
+5. SUBDIRS的使用并不限于顶层目录中的'Makefile.am'。 Automake可以用于构造任意深度的包。
+6. 在一个深（deep）包中，顶层'Makefile.am'通常十分简短。例如，下面是Hello发布版中的'Makefile.am'：
+
+    EXTRA_DIST = BUGS ChangeLog.O README-alpha
+    SUBDIRS = doc intl po src tests
+
+   你可以覆盖变量SUBDIRS。在你的 'Makefile.am'中包含：
+	SUBDIRS = @SUBDIRS@
+
+   然后在你的'configure.in'中，你可以指明：
+	SUBDIRS = "src doc lib po"
+	AC_SUBST(SUBDIRS)
+
+   以上修改的结果是：automake将创建包以获得subdirs，但实际上在运行configure之前并没有把目录列表包括进来。
+   SUBDIRS可以包含配置替换（例如，'@DIRS@'）； Automake本身并不实际检查这个变量的内容。
+   如果定义了SUBDIRS，那么你的'configure.in' 必须包含AC_PROG_MAKE_SET。
+
+
+对Yacc和Lex的支持 [找空看下yacc的原理]
+---------------------------------------------
+1. Automake假定由yacc（或lex）生成的'.c'文件是以输入文件名为基础命名的。
+	例如: 
+		a. 对于yacc源文件'foo.y'， automake将认为生成的中间文件是'foo.c'。
+		b. 使用扩展名'.y'的文件将被转化成 '.c'文件。
+		c. 扩展名'.yy'转化成 '.cc'；'.y++'转化成'c++'。
+		d. '.yxx'转化成'.cxx'；
+	
+	类似地，Lex源文件可以用于生成'C'或者'C++'；扩展名 '.l'、'.ll'、'.l++'和 '.lxx'都可以被识别。
+
+2. 你不应该在任何'SOURCES'变量中明确地提及中间的（'C'或者'C++'）文件；只要列出源文件就可以了。
+3. yacc（或lex）生成的中间文件将被包含在由它创建的任何发布版本中。这样用户就不需要拥有yacc或lex了。
+4. 如果出现了yacc源文件，那么你的'configure.in'必须定义变量'YACC'。完成这个任务最容易的方式是使用宏'AC_PROG_YACC'。lex源文件类似
+5. Automake允许在一个程序中使用多个yacc （或lex）源文件。 
+6. Automake使用ylwrap小程序在子目录中运行 yacc（或者lex）。这样做是因为 yacc的输出文件名被修改了，并且并行的make可以同时地处理多于一个的yacc实例。
+7. ylwrap和automake一同发布。它应该出现在由'AC_CONFIG_AUX_DIR'给出的目录，如果没有在'configure.in'中给出这个宏，它就应该出现在当前目录中。
+
+8. 对于yacc，仅仅管理锁是不够的。yacc的输出还总是在内部使用相同的符号名，所以不可能把两个yacc解析器（parser）连接到同一个可执行文件中。
+	我们建议使用如下在gdb中应用的改名方式 (对于每一个define，用任何你喜欢的东西替换前缀'c_') ：
+	#define	yymaxdepth c_maxdepth
+	#define	yyparse	c_parse
+	#define	yylex	c_lex
+	#define	yyerror	c_error
+	#define	yylval	c_lval
+	#define	yychar	c_char
+	#define	yydebug	c_debug
+	#define	yypact	c_pact	
+	#define	yyr1	c_r1			
+	#define	yyr2	c_r2			
+	#define	yydef	c_def		
+	#define	yychk	c_chk		
+	#define	yypgo	c_pgo		
+	#define	yyact	c_act		
+	#define	yyexca	c_exca
+	#define yyerrflag c_errflag
+	#define yynerrs	c_nerrs
+	#define	yyps	c_ps
+	#define	yypv	c_pv
+	#define	yys	c_s
+	#define	yy_yys	c_yys
+	#define	yystate	c_state
+	#define	yytmp	c_tmp
+	#define	yyv	c_v
+	#define	yy_yyv	c_yyv
+	#define	yyval	c_val
+	#define	yylloc	c_lloc
+	#define yyreds	c_reds
+	#define yytoks	c_toks
+	#define yylhs	c_yylhs
+	#define yylen	c_yylen
+	#define yydefred c_yydefred
+	#define yydgoto	c_yydgoto
+	#define yysindex c_yysindex
+	#define yyrindex c_yyrindex
+	#define yygindex c_yygindex
+	#define yytable	 c_yytable
+	#define yycheck	 c_yycheck
+
+
+C++和其它语言
+---------------------------------------------------------------------------------------------------------
+Automake对C++提供了完整的支持，对其它语言也有一些不完善的支持。对其它语言的支持将根据实际需要被添加进来。
+任何包括了C++代码的包都必须在'configure.in'中定义输出变量'CXX'；完成这一任务的最简单方式就是使用宏AC_PROG_CXX。
+
+在出现C++源文件的时候需要定义几个附加的变量：
+	1. CXX: C++编译器的名称。
+	2. CXXFLAGS: 传递给C++编译器的任何选项。
+	3. CXXCOMPILE: 实际用于编译C++源文件的命令。文件名将被添加到它的后面以构成完整的命令行。
+	4. CXXLINK: 实际用于连接C++程序的命令。
+
+自动de-ANSI-fication (可移植性问题)
+--------------------------------------------------------------------------------------------
+虽然GNU标准允许使用标准C，使用标准C可能使包难以移植到一些旧的编译器上（典型的是SunOS）。
+
+1. 在实际的编译发生之前，Automake允许你通过对每个源文件实施"de-ANSI-fying" 以使得在这一类机器上能工作。
+2. 如果'Makefile.am'变量AUTOMAKE_OPTIONS 包括了选项ansi2knr， 那么处理de-ANSI-fication的代码就被插入到生成的'Makefile.in'中。
+	这使得目录中的每个C源文件都被看作标准C。如果有标准C编译器可以使用，就使用它。
+	如果没有标准C编译器可用，就用程序ansi2knr 把文件转换成K&R C，而后再被编译。
+	程序ansi2knr相当简单。它假定源代码按照特定的方式进行排版；详情请参见ansi2knr的man。
+
+3. 支持de-ANSI-fication需要把源文件'ansi2knr.c'和 'ansi2knr.1'与标准C源代码放在同一个包中；这些文件与Automake 一同发布。此外，包的'configure.in'必须调用宏AM_C_PROTOTYPES。
+4. Automake还负责在当前包的其它目录中寻找ansi2knr的支持文件。
+	a. 把到达适当目录的相对路径添加到选项ansi2knr之前来完成。
+		例如，假定一个包的标准C代码储存在子目录'src'和'lib'中。文件'ansi2knr.c'和'ansi2knr.1'出现在'lib'中。那么下述内容应该在'src/Makefile.am'中出现：
+			AUTOMAKE_OPTIONS = ../lib/ansi2knr
+		如果没有给出前缀，就假定文件在当前目录中。
+
+自动依赖性跟踪
+-------------------------------------------------------------------------------------
+问题: 作为开发者，经常痛苦地在每次项目的include文件的依赖关系发生变化的时候对'Makefile.in'进行更新。
+解决: automake提供了一种方式以自动跟踪依赖关系的变化，并且在生成的'Makefile.in'中给出这些依赖关系。
+	  当前这种支持需要使用GNU make和gcc。如果有足够的必要性，将来可能提供对不同的依赖性生成程序的支持。
+	  在此之前，如果当前目录中定义了任何C程序或者库，在缺省状态下就启动这种模式，因而你可能从非GNU make那里得到一个'Must be a separator'错误。
+
+1. 当你决定创建一个发布版本时，目标dist 将用'--include-deps'和其它选项重新运行automake。这将是的以前生成的依赖关系被插入到生成的'Makefile.in'中，并因而被插入到发布之中。
+	这一步骤不会把依赖性生成代码包括进来, 因为依赖关系已经被生成好， 所以不需要用户运行这些依赖性生成代码。下载你的发布版本的人就不必使用GNU make和gcc。
+
+2. 在添加到'Makefile.in'的时候，所有系统特定的依赖性都被自动删除了。这通过变量'OMIT_DEPENDENCIES'实现。
+	例如：automake将删除所有对系统头文件的引用。有时有必要指明应该删除哪个头文件。
+	例如，如果你的 'configure.in'使用了'AM_WITH_REGEX'，那么就应该删除任何与'rx.h'或者 'regex.h'有关的依赖性，这是因为在用户配置包之前还不知道应该使用那个头文件。
+	实际上，automake足够地聪明以至于可以处理诸如常规表达式头文件的特殊情况。如果使用了'AM_GNU_GETTEXT'，它还将自动忽略 'libintl.h'。
+
+3. 自动依赖性跟踪功能可以通过在变量AUTOMAKE_OPTIONS 中设置no-dependencies来关闭。
+4. 如果你打开由make dist创建的发布版本，而且你希望重新添加依赖性跟踪的代码，只要重新运行automake就行了。
+5. 实际的依赖性文件被储存在创建目录下的一个名为'.deps' 的子目录中。这些依赖性是机器特有的。删除它们是安全的；它们将在下次创建的时候自动重建。
+
+可执行脚本
+----------------------------------------------------------------------------------------------------
+定义和安装脚本程序是可能的。这种程序被罗列在主变量'SCRIPTS'中。 
+ 1. automake没有为脚本定义任何依赖性关系；'Makefile.am'应该包含正确的规则。
+ 2. automake并不假定脚本是派生的对象；脚本必须被手工地删除。
+ 3. automake本身就是在配置时刻从'automake.in' 中生成的脚本。下面给出了如何处理它：
+	  bin_SCRIPTS = automake
+    因为automake出现在宏AC_OUTPUT中，自动地生成了一个关于它的目标。
+ 
+ 脚本对象可以安装在bindir、sbindir、 libexecdir或者pkgdatadir中。
+
+头文件
+--------------------------------------------------------------------
+头文件由'HEADERS'变量族所指定。通常是不安装头文件的，所以变量noinst_HEADERS是最常用的。
+所有的头文件都必须在某些地方列出；没有列出的头文件将不会出现在发布版本中。
+头文件可以安装到includedir、oldincludedir或者 pkgincludedir中。
+
+与体系结构无关的数据文件
+-----------------------------------------------------------------------------
+Automake使用'DATA'族变量来支持对各种数据文件的安装。
+这些数据可以安装在目录datadir、 sysconfdir、sharedstatedir、 localstatedir或者pkgdatadir中。
+在缺省状态下，数据文件不会被包含在发布版本中。
+
+下面是automake如何安装它的附加数据文件：
+	pkgdata_DATA = clean-kr.am clean.am ...
+
+已创建的源代码
+--------------------------------------------------------------------------------------------------------------------------
+1. 有时候，一个可以被称作“源文件”的文件（例如一个C '.h'文件）实际上是从其它文件中派生出来的。这类文件应该被罗列在变量 BUILT_SOURCES中。
+2. 在缺省状态下，不会编译已创建的源文件。你必须在一些其它的'_SOURCES'变量中明确地给出它们，以便对其进行编译。
+3. 需要说明的是，在某些情况下，BUILT_SOURCES将以令人惊讶的方式工作。
+4. 为了获得已创建的源文件以进行自动依赖性跟踪，'Makefile'必须依赖于 $(BUILT_SOURCES)。这导致这些源文件可能在某些可笑的时候被重新创建。
+
+其它的GNU工具
+----------------------------------------------------------------------------------
+1. Emacs Lisp
+	Automake为Emacs Lisp提供了一些支持。主变量'LISP'被用于保存一个'.el'文件的列表。
+	该主变量的可能前缀有：'lisp_' 和'noinst_'。如果定义了lisp_LISP，那么 'configure.in'就必须运行AM_PATH_LISPDIR （参见Automake支持的Autoconf宏）.
+
+	在缺省状态下，Automake将使用通过AM_PATH_LISPDIR 找到的Emacs按字节编译（byte-compile）所有Emacs Lisp源文件。
+	如果你不希望使用字节编译，请把变量'ELCFILES'定义为空。 字节编译的Emacs Lisp文件并不能在所有版本的Emacs间移植，所以如果你希望在同一个地方安装多于一个版本的Emacs，你可以关闭它。
+	进一步，许多包并没有从字节编译中获得实际的好处。我们仍然建议你不要改变缺省设置。
+	对站点进行特殊的配置以适用于它们自身，可能比为其它所有人创建不和谐的安装要更好一些。
+
+2. Gettext
+	如果在'configure.in'中出现了AM_GNU_GETTEXT，那么Automake就开启对GNU gettext的支持，一个支持国际化的消息编目系统（参见GNU gettext工具中的'GNU Gettext'节）。
+	在Automake中对gettext的支持需要把两个子目录附加到包中'intl'和'po'。Automake确认这些目录的存在并且在SUBDIRS中被给出。
+	更进一步，Automake检查在'configure.in'中包含了与所有合法的'.po'文件相对应的'ALL_LINGUAS'定义，并且没有多余的定义。
+
+3. Guile
+	a. Automake为构造Guile模块提供了一些自动支持。
+	b. 如果宏AM_INIT_GUILE_MODULE 出现在'configure.in'中，Automake将开启对Guile的支持。
+
+4. Libtool: Automake通过主变量'LTLIBRARIES'提供了对GNU Libtool的支持, 对于创建共享库有用。
+
+创建文档
+---------------------------------------------------------------------------------------
+目前Automake提供了对Texinfo和man的支持。
+
+1. Texinfo
+	a. 如果当前目录中含有Texinfo源文件，你必须在主变量'TEXINFOS' 中给出声明。通常Texinfo文件被转换成info，因此经常在这里使用宏info_TEXINFOS。
+	b. 需要指出的是任何Texinfo源文件的文件名的扩展名都必须是'.texi'或者'.texinfo'。
+	c. 如果'.texi'文件@includes 'version.texi'，就将自动生成那个文件。 
+		'version.texi'定义了三个你可以引用的Texinfo宏：EDITION、VERSION和 UPDATED。
+		前两个宏保存了你的包的版本号（为清晰起见而分别保存）；最后一个宏是最后一次修改主文件的日期。
+		对'version.texi'的支持需要程序mdate-sh；这个程序由Automake提供。
+
+	d. 有时一个info文件实际上依赖于多个'.texi'文件。
+		例如，在GNU Hello中，'hello.texi'包括了文件'gpl.texi'。
+		你可以通过使用变量'texi_TEXINFOS'告诉Automake 这一依赖性。
+		下面就是Hello处理它的代码：
+
+			info_TEXINFOS = hello.texi
+			hello_TEXINFOS = gpl.texi
+		在缺省状态下，Automake认为'texinfo.tex'出现在Texinfo源文件所在的目录中。然而，如果你在'configure.in'中使用了AC_CONFIG_AUX_DIR
+		那么将到那个目录中去寻找'texinfo.tex'文件。如果给出了 '--add-missing'，Automake将自动提供'texinfo.tex'
+
+	e. 如果你的包在许多目录中储存了Texinfo文件，你可以用变量TEXINFO_TEX 来告诉automake到那里去寻找你的包的规范'texinfo.tex'文件。
+		这个变量的值应该是从当前'Makefile.am'到'texinfo.tex' 的相对路径。
+
+			TEXINFO_TEX = ../doc/texinfo.tex
+		选项'no-texinfo.tex'可以消除对'texinfo.tex'的需要。但使用变量TEXINFO_TEX更好些，因为它使得目标dvi 仍然可以工作。
+
+	Automake生成一个install-info目标；一些人显式地使用它。在缺省状态下，info文档通过运行'make install'来安装。可以通过给出选项no-installinfo以阻止执行这一操作。
+
+2. Man手册
+	a. 一个包还可以包含man手册。（参见GNU关于此事的标准，GNU编码标准中的'Man手册'节。）用主变量'MANS'声明Man手册。
+		通常使用宏man_MANS。根据文件的扩展名，Man手册被自动地安装到mandir的正确子目录中。
+
+	b. 在缺省状态下，man手册通过运行'make install'安装。然而，因为GNU项目并不需要man手册，许多维护者没有花费时间以及时更新man手册。
+		在这些情况下，给出选项no-installman 将阻止对man手册的安装。用户仍然可以显式地使用'make install-man' 来安装它们。
+
+		下面是GNU cpio如何处理它的文档（它同时包括了Texinfo文档和 man手册）：
+			info_TEXINFOS = cpio.texi
+			man_MANS = cpio.1 mt.1
+		Texinfo源文件和info文档都被看作用于创建发布版本的源代码。
+
+3. 安装了些什么
+    a. 所有PROGRAMS、SCRIPTS、 LIBRARIES、LISP、DATA 和HEADERS中列出的文件都被自动地安装在适当的位置。
+    b. Automake生成分离的install-data和install-exec目标，如果安装器（installer）在共享的目录结构中为多个机器进行安装，这些目标允许与机器独立的部分仅仅被安装一次。
+        使用标准目录前缀'data'、'info'、'man'、 'include'、'oldinclude'、'pkgdata'或者 'pkginclude'的变量（例如，'data_DATA'）将由 'install-data'安装。
+        使用标准目录前缀'bin'、'sbin'、'libexec'、 'sysconf'、'localstate'、'lib'或者 'pkglib'的变量（例如，'bin_PROGRAMS'）将由 'install-exec'安装。
+        任何使用了含有'exec'的用户定义目录前缀的变量（例如，'myexecbin_PROGRAMS'）将由'install-exec'安装。所有使用其它用户定义的前缀的变量将由'install-data'安装。
+
+    c. Automake还生成一个uninstall目标，一个 installdirs目标，和一个install-strip目标。
+
+
+4. 清除了些什么
+    a. GNU Makefile标准给出了许多不同的清除规则。通常由Automake自动确定可以清除哪些文件。
+    b. Automake还能识别一些为指明需要额外地清除的文件而定义的变量。这些变量是 MOSTLYCLEANFILES、CLEANFILES、DISTCLEANFILES 和MAINTAINERCLEANFILES。
+
+5. 需要发布哪些文件
+    a. 生成的'Makefile.in'中的dist目标可以用于产生用gzip压缩了的发布tar文件。 
+    b. tar文件是根据'PACKAGE'变量和'VERSION'变量命名的；精确地说，被命名为'package-version.tar.gz'。
+	c. 有一些文件需要被发布而没有包含在自动规则之中。这些文件应该在变量EXTRA_DIST中列出。需要指出的是，EXTRA_DIST只能处理当前目录中的文件。
+    b. 如果你定义了SUBDIRS，automake将递归地把子目录包含在发布版本中。
+	e. 如果是有条件地定义SUBDIRS（参见条件），通常automake将把所有可能出现在SUBDIRS中的所有目录包含在发布版本中。
+	f. 如果你需要有条件地给出一组目录，你可以设置变量DIST_SUBDIRS以精确地列出需要包含在发布版本中的子目录。
+    g. 在发布版本打包之前修改发布版本是有用的。如果目标dist-hook存在，它可以在填充发布目录之后，创建tar（或shar）文件之前运行。
+        dist-hook:
+            mkdir $(distdir)/random
+		    cp -p random/a1 random/a2 $(distdir)/random
+			Automake还生成一个distcheck目标，它有助于确认给定的发布版本实际上是可以工作的。 distcheck首先创建发布版本，而后试图进行一个VPATH创建。
+
+6. 对测试套件的支持
+	a. 如果定义了变量TESTS，它的值被看作为了运行测试而运行的程序列表。
+		程序可以是派生对象或者是源对象；
+		生成的规则将在srcdir和'.'中寻找。
+		在srcdir（它可以既是环境变量，又是make变量）中寻找程序需要的数据文件，
+		它们在一个分离的目录中进行创建的工作，并且是在特别的目标distcheck中创建的。
+		在运行的终点将打印失败的次数。如果一个测试程序以状态77退出，在最后的计数中它的结果将被忽略。这一特征允许不可移植的测试在对它来说没有意义的环境下被忽略。
+
+    b. 变量TESTS_ENVIRONMENT可以用于为测试运行而设置环境变量；在该规则中设置环境变量srcdir。
+        如果你所有的测试程序都是脚本，你还可以把TESTS_ENVIRONMENT设置成一个对shell的调用（例如'$(SHELL) -x'）；这对调试测试结果来说是有用的。
+        如果'dejagnu'出现在AUTOMAKE_OPTIONS中，那么就假定运行一个基于dejagnu的测试套件。变量 DEJATOOL的值被作为--tool的参数传递给 runtest；它的缺省值是包的名字。
+        在缺省状态下，变量RUNTESTDEFAULTFLAGS保存了传递给dejagnu的--tool和--srcdir选项；如果有必要，可以覆盖它。
+		还可以覆盖变量EXPECT、RUNTEST和RUNTESTFLAGS以提供项目特定的值。例如，如果你正在测试编译器工具链（toolchain），你就需要这样做。
+		这是因为缺省值并没有把主机名和目标名考虑进去。
+
+		在上述两种情况中，测试都是通过'make check'来完成的。
+
+7. 改变Automake的行为 [Makefile.am]
+	a. Automake的各种特征可以在'Makefile.am'中用各种选项进行控制。这些选项在一个名为AUTOMAKE_OPTIONS的特殊变量中被列出。目前可以理解的选项有：
+		gnits, gnu, oreign, cygnus
+		设置适当的严格性。选项gnits还隐含了readme-alpha和check-news。
+
+		ansi2knr, path/ansi2knr
+		打开自动de-ANSI-fication功能。参见自动de-ANSI-fication。如果以一个路径开头，那么生成的'Makefile.in'将在特别给定的目录中寻找程序'ansi2knr'。
+
+		check-news
+		给出该选项后，如果当前的版本号没有出现在'NEWS'文件中的前几行中，将导致make dist的失败。
+
+		dejagnu
+		生成dejagnu特定的规则。参见对测试套件的支持。
+
+		dist-shar: 就象普通的dist目标那样生成dist-shar目标。这个新目标将创建一个发布版本的shar包。
+		dist-zip: 就象普通的dist目标那样生成dist-zip目标。这个新目标将创建一个发布版本的zip包。
+		dist-tarZ: 就象普通的dist目标那样生成dist-tarZ目标。这个新目标将创建一个发布版本的tar包。警告：如果你实际上在使用GNU tar，那么生成的包可能含有不可移植的结构。
+
+		no-dependencies
+        这与在命令行中使用选项'--include-deps'相类似，但在那些你不希望使用自动依赖性跟踪的场合下更为有用。参见自动依赖性跟踪。在这个情况下将有效地关闭自动依赖性跟踪。
+
+        no-installinfo
+        给出该选项后，生成的'Makefile.in'在缺省的状态下将不会创建或者安装info文档。然而，目标info和目标install-info 仍然是可用的安装选项。
+		在'GNU'严格性以及更高的严格性中这个选项是不允许使用的。
+
+        no-installman
+		给出这个选项后，生成的'Makefile.in'在缺省状态下将不会安装man手册。然而，目标install-man仍然是可用的安装选项。
+		在'GNU'严格性以及更高的严格性中这个选项是不允许使用的。
+		
+		readme-alpha
+		如果本发布是一个alpha版本，并且存在文件'README-alpha'，那么它将被添加到发布版本中。
+		如果给出了该选项，版本号应该是以下两种形式之一。
+		第一种形式是'MAJOR.MINOR.ALPHA'，其中每个元素都是一个数字；最后的点和数字应该被忽略以用于非alpha版本。
+		第二种形式是'MAJOR.MINORALPHA'，其中ALPHA是一个文字；对于非alpha版本来说，应该忽略它。
+
+		version
+		可以给出版本号（例如，'0.30'）。如果Automake并不比要求的版本号新，将不会创建'Makefile.in'。automake能够诊断不能识别的选项。
+
+8. 处理新的文件扩展名
+    a. 为处理Automake不能识别的文件类型而引入新的隐含规则是有用的。如果这样做，你必须把这些新的后缀告诉GNU Make。可以通过把新后缀的列表添加到变量SUFFIXES来完成。
+        例如，目前automake不能对Java提供任何支持。如果你写了一个用于从'.java' 源文件生成'.class'文件的宏，你还需要把这些后缀添加到列表中：
+        SUFFIXES = .java .class
+
+9. 条件
+    a. Automake支持一种简单的条件。
+	    在使用条件之前，你必须在configure.in文件中使用 AM_CONDITIONAL定义它。宏AM_CONDITIONAL 接受两个参数。
+		AM_CONDITIONAL的第一个参数是条件的名字。它应该是一个以字母开头并且仅仅由字母、数字和下划线组成的简单字符串。
+		AM_CONDITIONAL的第二个参数是一个适用于shell的if语句的shell条件。该条件将在运行configure的时候被求值。
+
+    b. 条件典型地依赖于用户提供给configure脚本的选项。下面是一个演示如果在用户使用了'--enable-debug'选项的情况下为真的条件的例子。
+        AC_ARG_ENABLE(debug,
+		    [  --enable-debug    Turn on debugging],
+			[ case "${enableval}" in
+			    yes) debug=true ;;
+				no)  debug=false ;;
+				*) AC_MSG_ERROR(bad value ${enableval} for --enable-debug) ;;
+			    esac
+			],
+			[debug=false]
+		)
+
+		AM_CONDITIONAL(DEBUG, test x$debug = xtrue)。 下面是一个如何在'Makefile.am'中使用条件的例子：
+
+			if DEBUG
+				DBG = debug
+			else
+				DBG =
+			endif
+			noinst_PROGRAMS = $(DBG)
+		这个小例子还可以被处理以用于EXTRA_PROGRAMS。（参见创建一个程序）。
+
+	c. 需要指出的是Automake中的条件与GNU Make中的条件是不相同的。
+		Automake的条件在配置时刻由'configure'脚本完成检查，并且将影响'Makefile.in'到'Makefile'的转换。
+		它们是基于传递给'configure'的选项和'configure'对本地系统的检测结果的。
+		GNU Make条件则在make时完成检查，并且是基于传递给make程序的变量或者是基于在'Makefile'中定义的变量的。
+
+		Automake条件在任何make下都可以工作。
+		
+	d. --gnu和--gnits的效果
+
+		选项'--gnu'（或者'AUTOMAKE_OPTIONS'中的'gnu'）将使得 automake执行如下检查：
+			在包的顶层目录中应该含有文件'INSTALL'、'NEWS'、'README'、'COPYING'、'AUTHORS'和'ChangeLog'。
+			禁止使用选项'no-installman'和'no-installinfo'。
+			'--gnu'可以要求某些非标准GNU程序为了各种仅由维护者使用的目标而存在；例如，在将来'make dist'可能会需要pathchk。
+
+		选项'--gnits'进行'--gnu'所做的所有检查，此外还进行如下检查：
+			'make dist'将检查以确认文件'NEWS'被更新到当前的版本。
+			不允许出现文件'COPYING.LIB'。LGPL显然是一个失败的试验。
+			检查文件'VERSION'以确保它的格式是符合Gnits标准的。
+			唯一对版本号格式实行限制的模式，该模式是automake唯一能够自动确定是否把'README-alpha'包含在发布版本中的模式。
+			需要出现文件'THANKS'。
+					   
+		选项--cygnus的效果
+			对于如何构造'Makefile.in'，Cygnus解决方案有一些不同的规则。把'--cygnus'传递给automake将使所有生成的'Makefile.in' 服从Cygnus规则。
+			下面是'--cygnus'的精确效果：
+				总是在创建目录中，而不是在源目录创建Info文件。
+				如果指明了Texinfo源文件，就不需要'texinfo.tex'。其设想是：应该提供该文件，但automake不能在适当的位置找到它。这种设想是Cygnus包典型的包装方式的产物。
+				'make dist'将在创建目录和源目录中寻找文件。为了支持把info文件储存在创建目录中而提供这个功能。
+				将在创建树和用户的'PATH'中寻找某些工具。这些工具是runtest、 expect、makeinfo和texi2dvi。
+				隐含--foreign选项。
+				隐含选项'no-installinfo'和选项'no-dependencies'。
+				需要宏'AM_MAINTAINER_MODE'和宏'AM_CYGWIN32'。
+				目标check并不依赖于目标all。
+				建议GNU维护者使用'gnu'严格性方式而不是特殊的Cygnus模式。
+
+10. 什么时候Automake不够用
+        支持本地版本的目标有all、info、dvi、 check、install-data、install-exec、 uninstall和各种clean目标（mostlyclean、clean、distclean和 maintainer-clean）。
+        需要指出的是没有 uninstall-exec-local或者uninstall-data-local目标；请使用uninstall-local。仅仅反安装数据或仅仅反安装可执行文件是没有意义的。
+		
+		例如，下面是把一个文件安装到'/etc'的一种方式：
+		install-data-local:
+			$(INSTALL_DATA) $(srcdir)/afile /etc/afile
+
+		某些目标还可以在完成它的工作之后运行一个称为hook的其它目标。 hook是在源目标名的后面添加'-hook'。
+		允许使用hook的目标是 install-data、install-exec、dist和 distcheck。
+
+		例如，下面是如果创建一个到已经安装的程序的硬连接：
+		install-exec-hook:
+			ln $(bindir)/program $(bindir)/proglink
+
+11. 发布'Makefile.in'
+        Automake对于发布生成的'Makefile.in'没有施加任何限制。我们仍然鼓励软件的作者按照诸如GPL之类的条款发布它们的作品，但是Automake 并不要求你这样做。
+        一些可以通过选项--add-missing自动安装的文件则受到 GPL的约束；打开每个文件检查一下。

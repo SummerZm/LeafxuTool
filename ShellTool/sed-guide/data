@@ -1,0 +1,41 @@
+total 211772
+drwxr-xr-x  28 root root      4096 Sep 30  2018 .
+drwxr-xr-x  28 root root      4096 Sep 30  2018 ..
+-rw-r--r--   1 root root 215065456 Jun 13  2017 arm-hisiv300-linux.tar.bz2
+drwxr-xr-x   2 root root      4096 Oct  8 17:52 bin
+drwxr-xr-x   3 root root      4096 May  4  2018 boot
+-rw-r--r--   1 root root      2621 Sep  7  2018 build.prop.0
+-rw-r--r--   1 root root      2597 Sep  7  2018 build.prop.1
+-rw-r--r--   1 root root      2597 Sep  7  2018 build.prop.orgin
+lrwxrwxrwx   1 root root        12 Jun  4  2014 cdrom -> /media/cdrom
+drwxr-xr-x  14 root root      3280 Mar 28 14:38 dev
+drwxr-xr-x 102 root root      4096 Mar 30 17:28 etc
+-rw-------   1 root root       287 Sep  7  2018 eth0.prop
+-rw-------   1 root root       364 Sep  7  2018 eth0.prop.factory
+drwxr-xr-x   2 root root      4096 Sep  6  2015 hgfs
+drwxr-xr-x   4 root root      4096 Dec  6 18:25 home
+drwxr-xr-x   5 root root      4096 Jan 11 18:11 include
+lrwxrwxrwx   1 root root        30 Jun  4  2014 initrd.img -> /boot/initrd.img-3.2.0-4-amd64
+drwxr-xr-x  14 root root      4096 May  4  2018 lib
+drwxr-xr-x   2 root root     12288 May  4  2018 lib32
+drwxr-xr-x   2 root root      4096 May  4  2018 lib64
+drwxr-xr-x   2 root root      4096 May  4  2018 libx32
+drwxr-xr-x   4 root root      4096 Oct  8  2015 lonbon
+-rwxr-xr-x   1 root root   1290595 Oct 16  2017 lonbon_httpd
+-rw-r--r--   1 root root    333672 Oct 13  2016 lonbon_httpd(1)
+drwx------   3 root root     16384 Jun 13  2016 lost+found
+drwxr-xr-x   4 root root      4096 Jun  4  2014 media
+drwxr-xr-x   4 root root      4096 Dec  7  2017 mnt
+drwxr-xr-x   3 root root      4096 Jun  5  2014 opt
+dr-xr-xr-x 117 root root         0 Mar 28 14:38 proc
+drwx------  13 root root      4096 Apr  1 10:54 root
+-rw-r--r--   1 root root        90 Aug 27  2015 root.img.gz
+drwxr-xr-x  22 root root       860 Apr  1 10:54 run
+drwxr-xr-x   2 root root      4096 May 22  2018 sbin
+drwxr-xr-x  13 root root         0 Mar 28 14:38 sys
+drwxrwxrwt   7 root root     12288 Apr  1 11:22 tmp
+drwxr-xr-x  12 root root      4096 Oct 29  2015 usr
+drwxr-xr-x  12 root root      4096 Jun  5  2014 var
+lrwxrwxrwx   1 root root        26 Jun  4  2014 vmlinuz -> boot/vmlinuz-3.2.0-4-amd64
+drwxrwxrwx  11 root root      4096 Mar 23 16:15 work
+drwxrwxrwx   2 root root      4096 Apr 26  2016 work1
